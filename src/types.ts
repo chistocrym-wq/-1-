@@ -36,19 +36,9 @@ export interface FillBlankQuestion extends BaseQuestion {
   alternatives?: string[];
 }
 
-export type Question =
-  | MultipleChoiceQuestion
-  | TrueFalseQuestion
-  | MatchingQuestion
-  | FillBlankQuestion;
+export type Question = MultipleChoiceQuestion | TrueFalseQuestion | MatchingQuestion | FillBlankQuestion;
 
-export type ReadingVisualType =
-  | 'sms'
-  | 'email'
-  | 'note'
-  | 'fridge-note'
-  | 'postcard'
-  | 'letter';
+export type ReadingVisualType = 'sms' | 'email' | 'note' | 'fridge-note' | 'postcard' | 'letter';
 
 export interface ReadingVisual {
   sender?: string;
@@ -107,29 +97,15 @@ export interface ModuleProgress {
   bestScore: number;
   lastScore: number;
   attempts: number;
+  answered?: number;
+  correct?: number;
 }
 
 export interface Progress {
   [key: string]: ModuleProgress;
 }
 
-export type LesenTeil2VisualType =
-  | 'shop'
-  | 'cinema'
-  | 'school'
-  | 'travel'
-  | 'website'
-  | 'housing'
-  | 'doctor'
-  | 'leisure'
-  | 'restaurant'
-  | 'classified'
-  | 'parking'
-  | 'service'
-  | 'transport'
-  | 'course'
-  | 'job'
-  | 'hotel';
+export type LesenTeil2VisualType = 'shop' | 'cinema' | 'school' | 'travel' | 'website' | 'housing' | 'doctor' | 'leisure' | 'restaurant' | 'classified' | 'parking' | 'service' | 'transport' | 'course' | 'job' | 'hotel';
 
 export interface LesenTeil2Option {
   type: LesenTeil2VisualType;
@@ -141,11 +117,6 @@ export interface ReadingTeil2Task {
   id: string;
   title: string;
   situation: string;
-  options: {
-    a: LesenTeil2Option;
-    b: LesenTeil2Option;
-  };
-  // Старый банк содержал ответы в верхнем регистре. Новый Lesen его не использует,
-  // но тип сохраняем совместимым, чтобы legacy-файлы не ломали typecheck.
+  options: { a: LesenTeil2Option; b: LesenTeil2Option };
   correctAnswer: 'a' | 'b' | 'A' | 'B';
 }
