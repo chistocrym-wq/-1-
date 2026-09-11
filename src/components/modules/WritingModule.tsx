@@ -199,10 +199,10 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
         <Progress value={teil1Index + 1} total={schreibenTeil1Tasks.length} />
 
         <section className="rounded-[22px] border border-[#ddd7ca] bg-white p-4 shadow-sm sm:p-6">
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
+          <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a7628]">Schreiben · Teil 1</p>
-              <h2 className="mt-1 text-xl font-bold text-[#10243f]">{task.title}</h2>
+              <h2 className="mt-1 break-words text-xl font-bold text-[#10243f]">{task.title}</h2>
             </div>
             <TranslationButton open={showTeil1Ru} onClick={() => setShowTeil1Ru((value) => !value)} />
           </div>
@@ -213,11 +213,10 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
           <p className="mt-4 text-[15px] font-medium leading-6 text-[#10243f]">{task.instruction}</p>
 
           {showTeil1Ru && (
-            <div className="mt-4 rounded-2xl border border-[#e4d3a7] bg-[#fbf6e9] p-4 text-sm leading-6 text-slate-700">
-              <p className="mb-1 text-xs font-black uppercase tracking-[0.14em] text-[#9a7628]">Перевод задания</p>
+            <TranslationPanel>
               <p>{ruScenario ?? 'Прочитайте ситуацию и заполните пять недостающих данных в формуляре.'}</p>
               <p className="mt-2 font-semibold text-[#10243f]">Заполните пять пропусков. Все ответы есть в немецком тексте выше.</p>
-            </div>
+            </TranslationPanel>
           )}
         </section>
 
@@ -228,17 +227,17 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
               const editable = Boolean(row.answer);
               const checked = formResult?.[rowIndex];
               return (
-                <div key={`${row.label}-${rowIndex}`} className="grid grid-cols-[minmax(105px,0.8fr)_minmax(0,1.2fr)] items-center gap-3 px-4 py-3 sm:grid-cols-[220px_1fr] sm:px-6">
-                  <label className="text-sm font-semibold text-slate-700">{row.label}:</label>
+                <div key={`${row.label}-${rowIndex}`} className="grid grid-cols-[minmax(100px,0.8fr)_minmax(0,1.2fr)] items-center gap-3 px-4 py-3 sm:grid-cols-[220px_1fr] sm:px-6">
+                  <label className="break-words text-sm font-semibold text-slate-700">{row.label}:</label>
                   {editable ? (
-                    <div>
+                    <div className="min-w-0">
                       <div className="relative">
                         <input
                           value={currentAnswers[rowIndex] ?? ''}
                           onChange={(event) => updateAnswer(rowIndex, event.target.value)}
                           disabled={Boolean(formResult)}
                           className={cn(
-                            'min-h-11 w-full rounded-xl border bg-white px-3 py-2 pr-10 text-base text-slate-900 outline-none transition focus:ring-2',
+                            'min-h-11 w-full min-w-0 rounded-xl border bg-white px-3 py-2 pr-10 text-base text-slate-900 outline-none transition focus:ring-2',
                             formResult == null && 'border-slate-300 focus:border-[#c69b3c] focus:ring-[#c69b3c]/15',
                             checked === true && 'border-emerald-400 bg-emerald-50',
                             checked === false && 'border-rose-400 bg-rose-50'
@@ -250,7 +249,7 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
                       {checked === false && <p className="mt-1 text-xs text-rose-700">Правильно: <b>{row.answer}</b></p>}
                     </div>
                   ) : (
-                    <div className="min-h-11 rounded-xl bg-[#f3f1ec] px-3 py-2 text-sm leading-6 text-slate-700">{row.value}</div>
+                    <div className="min-h-11 break-words rounded-xl bg-[#f3f1ec] px-3 py-2 text-sm leading-6 text-slate-700">{row.value}</div>
                   )}
                 </div>
               );
@@ -339,11 +338,11 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
       <WritingShell onBack={() => setScreen('home')} title="Schreiben · Teil 2" subtitle={`Задание ${teil2Index + 1} из ${schreibenTeil2Tasks.length}`} onTips={() => setShowTips(true)}>
         <Progress value={teil2Index + 1} total={schreibenTeil2Tasks.length} />
 
-        <section className="rounded-[22px] border border-[#d4d0c8] bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#d4d0c8] bg-[#ecebea] px-4 py-3 sm:px-6">
-            <div>
+        <section className="overflow-hidden rounded-[22px] border border-[#d4d0c8] bg-white shadow-sm">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-[#d4d0c8] bg-[#ecebea] px-4 py-3 sm:px-6">
+            <div className="min-w-0">
               <p className="text-sm font-bold text-[#10243f]">Schreiben · Teil 2</p>
-              <p className="text-xs text-slate-500">{task.title}</p>
+              <p className="truncate text-xs text-slate-500">{task.title}</p>
             </div>
             <TranslationButton open={showTeil2Ru} onClick={() => setShowTeil2Ru((value) => !value)} />
           </div>
@@ -352,19 +351,18 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
             <div className="mt-5 space-y-2 border-l-2 border-[#c69b3c] pl-4">
               {task.points.map((point) => <p key={point} className="text-[15px] leading-6 text-slate-800">– {point}</p>)}
             </div>
-            <p className="mt-5 text-sm font-semibold text-[#10243f]">Schreiben Sie zu jedem Punkt ein bis zwei Sätze. Schreiben Sie auch eine Anrede und einen Gruß (circa 30 Wörter).</p>
+            <p className="mt-5 text-sm font-semibold leading-6 text-[#10243f]">Schreiben Sie zu jedem Punkt ein bis zwei Sätze. Schreiben Sie auch eine Anrede und einen Gruß (circa 30 Wörter).</p>
 
             {showTeil2Ru && (
-              <div className="mt-4 rounded-2xl border border-[#e4d3a7] bg-[#fbf6e9] p-4 text-sm leading-6 text-slate-700">
-                <p className="mb-1 text-xs font-black uppercase tracking-[0.14em] text-[#9a7628]">Перевод задания</p>
-                <p>{ru?.situation ?? 'Напишите короткое письмо по ситуации.'}</p>
+              <TranslationPanel>
+                <p>{ru?.situation ?? 'Напишите короткое сообщение по ситуации.'}</p>
                 {ru?.points && (
                   <div className="mt-3 space-y-1">
                     {ru.points.map((point) => <p key={point}>– {point}</p>)}
                   </div>
                 )}
                 <p className="mt-3 font-semibold text-[#10243f]">Раскройте все три пункта, добавьте обращение и прощание. Ориентир — около 30 слов.</p>
-              </div>
+              </TranslationPanel>
             )}
           </div>
         </section>
@@ -406,19 +404,20 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
 
   return (
     <div className="animate-fade-in rounded-[28px] bg-[#f3f1ec] p-3 sm:p-6">
-      <div className="mb-4 flex items-start gap-3">
-        <button type="button" onClick={onBack} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#d8d2c6] bg-white text-[#10243f]" aria-label="Назад">
+      <div className="mb-4 grid grid-cols-[44px_minmax(0,1fr)_44px] items-start gap-2">
+        <button type="button" onClick={onBack} className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d8d2c6] bg-white text-[#10243f]" aria-label="Назад">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="min-w-0 flex-1 text-center pr-11">
+        <div className="min-w-0 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a7628]">Goethe-Zertifikat A1</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-[#10243f]">SCHREIBEN</h1>
           <p className="mt-1 text-sm text-slate-600">Письменная часть экзамена</p>
         </div>
+        <div aria-hidden="true" className="h-11 w-11" />
       </div>
 
-      <div className="mb-5 rounded-2xl border border-[#ddd7ca] bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm sm:p-5">
-        В этом модуле вы тренируете две части Schreiben A1: заполнение формуляра и короткое сообщение. В Teil 1 нужно перенести данные из ситуации в форму, а в Teil 2 — написать короткий текст по трём обязательным пунктам.
+      <div className="mx-auto mb-5 max-w-2xl rounded-2xl border border-[#ddd7ca] bg-white p-4 text-center text-sm leading-6 text-slate-700 shadow-sm sm:p-5">
+        В модуле <b className="text-[#10243f]">Schreiben A1</b> вы тренируете две части: <b>Teil 1 — Formulare</b>, где нужно перенести данные из ситуации в форму, и <b>Teil 2 — Kurze Mitteilungen</b>, где нужно написать короткий текст по трём обязательным пунктам.
       </div>
 
       <div className="space-y-4">
@@ -426,7 +425,8 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
           number="1"
           title="Formulare"
           description="Lesen Sie die Situation und ergänzen Sie fünf fehlende Angaben im Formular."
-          translation="Прочитайте ситуацию и заполните пять пропусков в формуляре."
+          translationTitle="Formulare — Формуляры"
+          translation="Прочитайте ситуацию и перенесите пять недостающих данных в формуляр."
           translationOpen={showTeil1CardRu}
           onToggleTranslation={() => setShowTeil1CardRu((value) => !value)}
           icon={<FileText className="h-5 w-5" />}
@@ -439,6 +439,7 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
           number="2"
           title="Kurze Mitteilungen"
           description="Lesen Sie die Situation und schreiben Sie eine kurze Mitteilung zu drei Punkten. Schreiben Sie auch eine Anrede und einen Gruß."
+          translationTitle="Kurze Mitteilungen — Короткие сообщения"
           translation="Прочитайте ситуацию и напишите короткое сообщение по трём обязательным пунктам. Добавьте обращение и прощание."
           translationOpen={showTeil2CardRu}
           onToggleTranslation={() => setShowTeil2CardRu((value) => !value)}
@@ -459,10 +460,17 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
 function WritingShell({ onBack, title, subtitle, onTips, children }: { onBack: () => void; title: string; subtitle: string; onTips?: () => void; children: React.ReactNode }) {
   return (
     <div className="animate-fade-in rounded-[28px] bg-[#f3f1ec] p-3 sm:p-6">
-      <header className="mb-5 flex items-center gap-3">
-        <button type="button" onClick={onBack} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#d8d2c6] bg-white text-[#10243f]" aria-label="Назад"><ArrowLeft className="h-5 w-5" /></button>
-        <div className="min-w-0 flex-1"><h1 className="truncate text-xl font-black text-[#10243f]">{title}</h1><p className="text-sm text-slate-500">{subtitle}</p></div>
-        {onTips && <SecretsButton onClick={onTips} />}
+      <header className="mb-5 grid grid-cols-[44px_minmax(0,1fr)_44px] items-start gap-2">
+        <button type="button" onClick={onBack} className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d8d2c6] bg-white text-[#10243f]" aria-label="Назад">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="min-w-0 text-center">
+          <h1 className="break-words text-xl font-black leading-6 text-[#10243f]">{title}</h1>
+          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+        </div>
+        <div className="flex h-11 w-11 items-center justify-center">
+          {onTips ? <SecretsButton onClick={onTips} /> : null}
+        </div>
       </header>
       {children}
     </div>
@@ -471,7 +479,7 @@ function WritingShell({ onBack, title, subtitle, onTips, children }: { onBack: (
 
 function SecretsButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} title="Секреты успешной сдачи" aria-label="Секреты успешной сдачи" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e4d3a7] bg-[#fbf6e9] text-[#9a7628] transition hover:bg-[#f6edda]">
+    <button type="button" onClick={onClick} title="Секреты успешной сдачи" aria-label="Секреты успешной сдачи" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#e4d3a7] bg-[#fbf6e9] text-[#9a7628] transition hover:bg-[#f6edda]">
       <Lightbulb className="h-5 w-5" />
     </button>
   );
@@ -479,43 +487,91 @@ function SecretsButton({ onClick }: { onClick: () => void }) {
 
 function TranslationButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} title={open ? 'Скрыть русский перевод' : 'Показать по-русски'} aria-label={open ? 'Скрыть русский перевод' : 'Показать по-русски'} className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition', open ? 'border-[#c69b3c] bg-[#fbf6e9] text-[#9a7628]' : 'border-[#ddd7ca] bg-white text-[#10243f]')}>
+    <button type="button" onClick={onClick} title={open ? 'Скрыть перевод' : 'Показать перевод'} aria-label={open ? 'Скрыть перевод' : 'Показать перевод'} className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition', open ? 'border-[#c69b3c] bg-[#fbf6e9] text-[#9a7628]' : 'border-[#ddd7ca] bg-white text-[#10243f]')}>
       {open ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
     </button>
   );
 }
 
-function Progress({ value, total }: { value: number; total: number }) {
-  return <div className="mb-4"><div className="mb-1 flex justify-between text-xs font-medium text-slate-500"><span>Прогресс</span><span>{value} / {total}</span></div><div className="h-2 overflow-hidden rounded-full bg-[#ded9cf]"><div className="h-full rounded-full bg-[#c69b3c]" style={{ width: `${Math.min(100, (value / total) * 100)}%` }} /></div></div>;
+function TranslationPanel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 w-full rounded-2xl border border-[#e4d3a7] bg-[#fbf6e9] p-4 text-center text-sm leading-6 text-slate-700 sm:p-5">
+      <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[#9a7628]">Перевод</p>
+      <div className="mx-auto max-w-2xl">{children}</div>
+    </div>
+  );
 }
 
-function ModuleCard({ number, title, description, translation, translationOpen, onToggleTranslation, icon, completed, total, extra, onStart, onTips }: { number: string; title: string; description: string; translation: string; translationOpen: boolean; onToggleTranslation: () => void; icon: React.ReactNode; completed: number; total: number; extra: string; onStart: () => void; onTips?: () => void }) {
+function Progress({ value, total }: { value: number; total: number }) {
+  return (
+    <div className="mb-4">
+      <div className="mb-1 flex justify-between text-xs font-medium text-slate-500"><span>Прогресс</span><span>{value} / {total}</span></div>
+      <div className="h-2 overflow-hidden rounded-full bg-[#ded9cf]"><div className="h-full rounded-full bg-[#c69b3c]" style={{ width: `${Math.min(100, (value / total) * 100)}%` }} /></div>
+    </div>
+  );
+}
+
+function ModuleCard({
+  number,
+  title,
+  description,
+  translationTitle,
+  translation,
+  translationOpen,
+  onToggleTranslation,
+  icon,
+  completed,
+  total,
+  extra,
+  onStart,
+  onTips,
+}: {
+  number: string;
+  title: string;
+  description: string;
+  translationTitle: string;
+  translation: string;
+  translationOpen: boolean;
+  onToggleTranslation: () => void;
+  icon: React.ReactNode;
+  completed: number;
+  total: number;
+  extra: string;
+  onStart: () => void;
+  onTips?: () => void;
+}) {
   const percent = total ? Math.round((completed / total) * 100) : 0;
   return (
-    <section className="rounded-[22px] border border-[#ddd7ca] bg-white p-5 shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#10243f] text-white">{icon}</div>
+    <section className="overflow-hidden rounded-[22px] border border-[#ddd7ca] bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#10243f] text-white sm:h-12 sm:w-12">{icon}</div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <div>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9a7628]">Teil {number}</p>
-              <h2 className="mt-1 text-xl font-bold text-[#10243f]">{title}</h2>
+              <h2 className="mt-1 break-words text-lg font-bold leading-6 text-[#10243f] sm:text-xl">{title}</h2>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
               {onTips && <SecretsButton onClick={onTips} />}
               <TranslationButton open={translationOpen} onClick={onToggleTranslation} />
             </div>
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-700">{description}</p>
-          {translationOpen && (
-            <div className="mt-3 rounded-xl border border-[#e4d3a7] bg-[#fbf6e9] p-3 text-sm leading-6 text-slate-700">
-              <p className="mb-1 text-xs font-black uppercase tracking-[0.12em] text-[#9a7628]">По-русски</p>
-              <p>{translation}</p>
-            </div>
-          )}
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#f3f1ec] p-3"><p className="text-xs text-slate-500">Выполнено</p><p className="mt-1 text-lg font-black text-[#10243f]">{completed} / {total}</p></div><div className="rounded-xl bg-[#f3f1ec] p-3"><p className="text-xs text-slate-500">Результат</p><p className="mt-1 text-sm font-bold text-[#10243f]">{extra}</p></div></div>
+
+      {translationOpen && (
+        <div className="mt-4 w-full rounded-2xl border border-[#e4d3a7] bg-[#fbf6e9] p-4 text-center text-sm leading-6 text-slate-700">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#9a7628]">Перевод</p>
+          <p className="mt-2 font-bold text-[#10243f]">{translationTitle}</p>
+          <p className="mt-2">{translation}</p>
+        </div>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="min-w-0 rounded-xl bg-[#f3f1ec] p-3"><p className="text-xs text-slate-500">Выполнено</p><p className="mt-1 text-lg font-black text-[#10243f]">{completed} / {total}</p></div>
+        <div className="min-w-0 rounded-xl bg-[#f3f1ec] p-3"><p className="text-xs text-slate-500">Результат</p><p className="mt-1 break-words text-sm font-bold text-[#10243f]">{extra}</p></div>
+      </div>
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e4dfd5]"><div className="h-full rounded-full bg-[#c69b3c]" style={{ width: `${percent}%` }} /></div>
       <button type="button" onClick={onStart} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#10243f] px-5 py-3 font-semibold text-white">Тренироваться <ChevronRight className="h-4 w-4" /></button>
     </section>
@@ -525,15 +581,40 @@ function ModuleCard({ number, title, description, translation, translationOpen, 
 function FeedbackCard({ feedback }: { feedback: AiFeedback }) {
   return (
     <section className="mt-4 rounded-[22px] border border-[#d4d0c8] bg-white p-4 shadow-sm sm:p-6">
-      <div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-[#c69b3c] bg-[#fbf6e9] text-xl font-black text-[#10243f]">{feedback.score}%</div><div><h3 className="font-black text-[#10243f]">Результат Otto</h3><p className="text-sm text-slate-600">{feedback.earned} / {feedback.max} баллов · {feedback.wordCount} слов</p></div></div>
+      <div className="flex items-center gap-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-[#c69b3c] bg-[#fbf6e9] text-xl font-black text-[#10243f]">{feedback.score}%</div>
+        <div><h3 className="font-black text-[#10243f]">Результат Otto</h3><p className="text-sm text-slate-600">{feedback.earned} / {feedback.max} баллов · {feedback.wordCount} слов</p></div>
+      </div>
       <div className="mt-5 space-y-3">
         {feedback.contentPoints.map((point, index) => (
-          <div key={`${point.point}-${index}`} className="rounded-xl bg-[#f6f4ef] p-3"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold text-[#10243f]">{index + 1}. {point.point}</p><span className={cn('shrink-0 rounded-full px-2 py-1 text-xs font-bold', point.earned === 3 ? 'bg-emerald-100 text-emerald-700' : point.earned === 1.5 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700')}>{point.earned} / 3</span></div><p className="mt-1 text-sm text-slate-600">{point.commentRu}</p></div>
+          <div key={`${point.point}-${index}`} className="rounded-xl bg-[#f6f4ef] p-3">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-semibold text-[#10243f]">{index + 1}. {point.point}</p>
+              <span className={cn('shrink-0 rounded-full px-2 py-1 text-xs font-bold', point.earned === 3 ? 'bg-emerald-100 text-emerald-700' : point.earned === 1.5 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700')}>{point.earned} / 3</span>
+            </div>
+            <p className="mt-1 text-sm text-slate-600">{point.commentRu}</p>
+          </div>
         ))}
-        <div className="rounded-xl bg-[#f6f4ef] p-3"><div className="flex justify-between gap-3"><p className="text-sm font-semibold text-[#10243f]">Kommunikative Gestaltung</p><span className="text-xs font-bold text-[#9a7628]">{feedback.communication.earned} / 1</span></div><p className="mt-1 text-sm text-slate-600">{feedback.communication.commentRu}</p></div>
+        <div className="rounded-xl bg-[#f6f4ef] p-3">
+          <div className="flex justify-between gap-3"><p className="text-sm font-semibold text-[#10243f]">Kommunikative Gestaltung</p><span className="text-xs font-bold text-[#9a7628]">{feedback.communication.earned} / 1</span></div>
+          <p className="mt-1 text-sm text-slate-600">{feedback.communication.commentRu}</p>
+        </div>
       </div>
       <div className="mt-5 rounded-xl border border-[#e4d3a7] bg-[#fbf6e9] p-4"><p className="text-sm font-bold text-[#10243f]">Обратная связь</p><p className="mt-1 text-sm leading-6 text-slate-700">{feedback.feedbackRu}</p><p className="mt-2 text-sm font-medium leading-6 text-[#10243f]">{feedback.feedbackDe}</p></div>
-      {feedback.corrections.length > 0 && <div className="mt-5"><h4 className="font-bold text-[#10243f]">Что исправить</h4><div className="mt-3 space-y-3">{feedback.corrections.map((item, index) => <div key={`${item.original}-${index}`} className="rounded-xl border border-slate-200 p-3 text-sm"><p className="text-rose-700"><b>Было:</b> {item.original}</p><p className="mt-1 text-emerald-700"><b>Лучше:</b> {item.corrected}</p><p className="mt-2 leading-6 text-slate-600">{item.explanation}</p></div>)}</div></div>}
+      {feedback.corrections.length > 0 && (
+        <div className="mt-5">
+          <h4 className="font-bold text-[#10243f]">Что исправить</h4>
+          <div className="mt-3 space-y-3">
+            {feedback.corrections.map((item, index) => (
+              <div key={`${item.original}-${index}`} className="rounded-xl border border-slate-200 p-3 text-sm">
+                <p className="text-rose-700"><b>Было:</b> {item.original}</p>
+                <p className="mt-1 text-emerald-700"><b>Лучше:</b> {item.corrected}</p>
+                <p className="mt-2 leading-6 text-slate-600">{item.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -588,26 +669,29 @@ function SuccessSecretsModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 sm:items-center sm:p-4" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div className="w-full max-w-xl overflow-hidden rounded-t-[28px] bg-[#fffefa] shadow-2xl sm:rounded-[28px]">
         <div className="flex items-center justify-between border-b border-[#e7e1d5] px-5 py-4 sm:px-6">
-          <div className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-[#c69b3c]" /><div><p className="text-xs font-black uppercase tracking-[0.16em] text-[#9a7628]">Otto советует</p><h3 className="text-lg font-black text-[#10243f]">Секреты успешной сдачи</h3></div></div>
-          <button type="button" onClick={onClose} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3f1ec] text-[#10243f]"><X className="h-5 w-5" /></button>
+          <div className="flex min-w-0 items-center gap-2">
+            <Lightbulb className="h-5 w-5 shrink-0 text-[#c69b3c]" />
+            <div className="min-w-0"><p className="text-xs font-black uppercase tracking-[0.16em] text-[#9a7628]">Otto советует</p><h3 className="break-words text-lg font-black text-[#10243f]">Секреты успешной сдачи</h3></div>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Закрыть" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f3f1ec] text-[#10243f]"><X className="h-5 w-5" /></button>
         </div>
 
         <div className="p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#f3f1ec] sm:h-24 sm:w-24"><img src="/otto.png" alt="Otto" className="h-full w-full object-contain" /></div>
-            <div className="relative flex-1 rounded-2xl border border-[#e4d3a7] bg-[#fbf6e9] p-4">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#f3f1ec] sm:h-24 sm:w-24"><img src="/otto.png" alt="Otto" className="h-full w-full object-contain" /></div>
+            <div className="relative min-w-0 flex-1 rounded-2xl border border-[#e4d3a7] bg-[#fbf6e9] p-4">
               <p className="text-xs font-bold text-[#9a7628]">Совет {index + 1} из {SUCCESS_SECRETS.length}</p>
-              <h4 className="mt-1 text-lg font-black leading-6 text-[#10243f]">{tip.title}</h4>
+              <h4 className="mt-1 break-words text-lg font-black leading-6 text-[#10243f]">{tip.title}</h4>
               <p className="mt-2 text-sm leading-6 text-slate-700">{tip.text}</p>
-              <div className="mt-3 rounded-xl bg-white/80 p-3 text-sm font-medium leading-6 text-[#10243f]">{tip.example}</div>
+              <div className="mt-3 break-words rounded-xl bg-white/80 p-3 text-sm font-medium leading-6 text-[#10243f]">{tip.example}</div>
             </div>
           </div>
 
           <div className="mt-5 flex items-center justify-center gap-1.5">{SUCCESS_SECRETS.map((_, dot) => <button key={dot} type="button" onClick={() => setIndex(dot)} aria-label={`Совет ${dot + 1}`} className={cn('h-2 rounded-full transition-all', dot === index ? 'w-6 bg-[#c69b3c]' : 'w-2 bg-[#d9d3c8]')} />)}</div>
 
           <div className="mt-5 flex gap-3">
-            <button type="button" onClick={() => setIndex((value) => (value - 1 + SUCCESS_SECRETS.length) % SUCCESS_SECRETS.length)} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8d2c6] bg-white px-4 py-3 font-semibold text-[#10243f]"><ChevronLeft className="h-4 w-4" /> Назад</button>
-            <button type="button" onClick={() => setIndex((value) => (value + 1) % SUCCESS_SECRETS.length)} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#10243f] px-4 py-3 font-semibold text-white">Следующий <ChevronRight className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setIndex((value) => (value - 1 + SUCCESS_SECRETS.length) % SUCCESS_SECRETS.length)} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8d2c6] bg-white px-3 py-3 font-semibold text-[#10243f]"><ChevronLeft className="h-4 w-4" /> Назад</button>
+            <button type="button" onClick={() => setIndex((value) => (value + 1) % SUCCESS_SECRETS.length)} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#10243f] px-3 py-3 font-semibold text-white">Следующий <ChevronRight className="h-4 w-4" /></button>
           </div>
         </div>
       </div>
