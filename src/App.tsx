@@ -10,6 +10,7 @@ import { WritingModule } from '@/components/modules/WritingModule';
 import { SpeakingModule } from '@/components/modules/SpeakingModule';
 import { useProgress } from '@/hooks/useProgress';
 import type { ModuleId } from '@/types';
+import { OTTO_CHARACTER_SRC } from './ottoCharacter';
 import '@/data/lesen/registerExtraSets';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | null;
@@ -35,9 +36,10 @@ export default function App() {
 
   const complete = (m: ModuleId) => (score: number, total: number) => recordScore(m, score, total);
   const globalEye = view === 'mock-exam';
+  const viewClass = `otto-view-${view ?? 'home'}`;
 
   return (
-    <div className="telegram-app otto-skin min-h-screen">
+    <div className={`telegram-app otto-skin ${viewClass} min-h-screen`}>
       <div className="otto-backdrop" aria-hidden="true">
         <div className="otto-glow otto-glow-a" />
         <div className="otto-glow otto-glow-b" />
@@ -61,7 +63,7 @@ export default function App() {
       {view !== null && (
         <div className="otto-companion" aria-hidden="true">
           <div className="otto-companion-crop">
-            <img src="/otto.png" alt="" />
+            <img src={OTTO_CHARACTER_SRC} alt="" />
           </div>
         </div>
       )}
