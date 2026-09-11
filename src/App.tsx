@@ -9,6 +9,7 @@ import { WritingModule } from '@/components/modules/WritingModule';
 import { SpeakingModule } from '@/components/modules/SpeakingModule';
 import { useProgress } from '@/hooks/useProgress';
 import type { ModuleId } from '@/types';
+import '@/data/lesen/registerExtraSets';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | null;
 
