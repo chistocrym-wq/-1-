@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 interface PageTranslationEyeProps {
@@ -45,12 +45,37 @@ function collectGermanText(scopeId: string) {
   return parts;
 }
 
+function fingerprint(scopeId: string) {
+  return collectGermanText(scopeId).join('\u241f');
+}
+
 export function PageTranslationEye({ scopeId }: PageTranslationEyeProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<string[]>([]);
   const [translations, setTranslations] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const lastFingerprint = useRef('');
+
+  useEffect(() => {
+    const root = document.getElementById(scopeId);
+    if (!root) return;
+
+    lastFingerprint.current = fingerprint(scopeId);
+    const observer = new MutationObserver(() => {
+      const next = fingerprint(scopeId);
+      if (next === lastFingerprint.current) return;
+      lastFingerprint.current = next;
+      setOpen(false);
+      setLoading(false);
+      setSource([]);
+      setTranslations([]);
+      setError('');
+    });
+
+    observer.observe(root, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [scopeId]);
 
   const toggle = async () => {
     if (open) {
@@ -59,6 +84,7 @@ export function PageTranslationEye({ scopeId }: PageTranslationEyeProps) {
     }
 
     const parts = collectGermanText(scopeId);
+    lastFingerprint.current = parts.join('\u241f');
     setSource(parts);
     setOpen(true);
     setError('');
