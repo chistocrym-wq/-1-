@@ -113,6 +113,8 @@ function countWords(text: string) {
 export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
   const [screen, setScreen] = useState<Screen>('home');
   const [showTips, setShowTips] = useState(false);
+  const [showTeil1CardRu, setShowTeil1CardRu] = useState(false);
+  const [showTeil2CardRu, setShowTeil2CardRu] = useState(false);
 
   const [teil1Index, setTeil1Index] = useState(() => {
     const data = readStorage<{ current?: number }>(KEY_T1_PROGRESS, {});
@@ -193,7 +195,7 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
     };
 
     return (
-      <WritingShell onBack={() => setScreen('home')} title="Schreiben · Teil 1" subtitle={`Задание ${teil1Index + 1} из ${schreibenTeil1Tasks.length}`} onTips={() => setShowTips(true)}>
+      <WritingShell onBack={() => setScreen('home')} title="Schreiben · Teil 1" subtitle={`Задание ${teil1Index + 1} из ${schreibenTeil1Tasks.length}`}>
         <Progress value={teil1Index + 1} total={schreibenTeil1Tasks.length} />
 
         <section className="rounded-[22px] border border-[#ddd7ca] bg-white p-4 shadow-sm sm:p-6">
@@ -273,7 +275,6 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
             </button>
           )}
         </div>
-        {showTips && <SuccessSecretsModal onClose={() => setShowTips(false)} />}
       </WritingShell>
     );
   }
@@ -405,38 +406,63 @@ export function WritingModule({ onBack, onComplete }: WritingModuleProps) {
 
   return (
     <div className="animate-fade-in rounded-[28px] bg-[#f3f1ec] p-3 sm:p-6">
-      <div className="mb-5 flex items-start justify-between gap-3">
+      <div className="mb-4 flex items-start gap-3">
         <button type="button" onClick={onBack} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#d8d2c6] bg-white text-[#10243f]" aria-label="Назад">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="min-w-0 flex-1 text-center">
+        <div className="min-w-0 flex-1 text-center pr-11">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a7628]">Goethe-Zertifikat A1</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-[#10243f]">SCHREIBEN</h1>
-          <p className="mt-1 text-sm text-slate-600">Формуляры и короткие письма</p>
+          <p className="mt-1 text-sm text-slate-600">Письменная часть экзамена</p>
         </div>
-        <SecretsButton onClick={() => setShowTips(true)} />
+      </div>
+
+      <div className="mb-5 rounded-2xl border border-[#ddd7ca] bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm sm:p-5">
+        В этом модуле вы тренируете две части Schreiben A1: заполнение формуляра и короткое сообщение. В Teil 1 нужно перенести данные из ситуации в форму, а в Teil 2 — написать короткий текст по трём обязательным пунктам.
       </div>
 
       <div className="space-y-4">
-        <ModuleCard number="1" title="Formulare" description="Прочитайте ситуацию и заполните 5 пропусков в формуляре." icon={<FileText className="h-5 w-5" />} completed={teil1Completed} total={schreibenTeil1Tasks.length} extra={`${teil1Perfect} без ошибок`} onStart={openTeil1} />
-        <ModuleCard number="2" title="Kurze Mitteilungen" description="Напишите короткое письмо примерно на 30 слов. Otto проверит его по критериям A1." icon={<PenLine className="h-5 w-5" />} completed={teil2Completed} total={schreibenTeil2Tasks.length} extra={teil2Completed ? `Средний результат ${teil2Average}%` : 'AI-проверка'} onStart={openTeil2} />
+        <ModuleCard
+          number="1"
+          title="Formulare"
+          description="Lesen Sie die Situation und ergänzen Sie fünf fehlende Angaben im Formular."
+          translation="Прочитайте ситуацию и заполните пять пропусков в формуляре."
+          translationOpen={showTeil1CardRu}
+          onToggleTranslation={() => setShowTeil1CardRu((value) => !value)}
+          icon={<FileText className="h-5 w-5" />}
+          completed={teil1Completed}
+          total={schreibenTeil1Tasks.length}
+          extra={`${teil1Perfect} без ошибок`}
+          onStart={openTeil1}
+        />
+        <ModuleCard
+          number="2"
+          title="Kurze Mitteilungen"
+          description="Lesen Sie die Situation und schreiben Sie eine kurze Mitteilung zu drei Punkten. Schreiben Sie auch eine Anrede und einen Gruß."
+          translation="Прочитайте ситуацию и напишите короткое сообщение по трём обязательным пунктам. Добавьте обращение и прощание."
+          translationOpen={showTeil2CardRu}
+          onToggleTranslation={() => setShowTeil2CardRu((value) => !value)}
+          icon={<PenLine className="h-5 w-5" />}
+          completed={teil2Completed}
+          total={schreibenTeil2Tasks.length}
+          extra={teil2Completed ? `${teil2Average}%` : '—'}
+          onStart={openTeil2}
+          onTips={() => setShowTips(true)}
+        />
       </div>
 
-      <div className="mt-5 rounded-2xl border border-[#ddd7ca] bg-white p-4 text-sm leading-6 text-slate-600">
-        <b className="text-[#10243f]">Как на экзамене:</b> Teil 1 — формуляр; Teil 2 — короткое сообщение по трём обязательным пунктам.
-      </div>
       {showTips && <SuccessSecretsModal onClose={() => setShowTips(false)} />}
     </div>
   );
 }
 
-function WritingShell({ onBack, title, subtitle, onTips, children }: { onBack: () => void; title: string; subtitle: string; onTips: () => void; children: React.ReactNode }) {
+function WritingShell({ onBack, title, subtitle, onTips, children }: { onBack: () => void; title: string; subtitle: string; onTips?: () => void; children: React.ReactNode }) {
   return (
     <div className="animate-fade-in rounded-[28px] bg-[#f3f1ec] p-3 sm:p-6">
       <header className="mb-5 flex items-center gap-3">
         <button type="button" onClick={onBack} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#d8d2c6] bg-white text-[#10243f]" aria-label="Назад"><ArrowLeft className="h-5 w-5" /></button>
         <div className="min-w-0 flex-1"><h1 className="truncate text-xl font-black text-[#10243f]">{title}</h1><p className="text-sm text-slate-500">{subtitle}</p></div>
-        <SecretsButton onClick={onTips} />
+        {onTips && <SecretsButton onClick={onTips} />}
       </header>
       {children}
     </div>
@@ -463,11 +489,32 @@ function Progress({ value, total }: { value: number; total: number }) {
   return <div className="mb-4"><div className="mb-1 flex justify-between text-xs font-medium text-slate-500"><span>Прогресс</span><span>{value} / {total}</span></div><div className="h-2 overflow-hidden rounded-full bg-[#ded9cf]"><div className="h-full rounded-full bg-[#c69b3c]" style={{ width: `${Math.min(100, (value / total) * 100)}%` }} /></div></div>;
 }
 
-function ModuleCard({ number, title, description, icon, completed, total, extra, onStart }: { number: string; title: string; description: string; icon: React.ReactNode; completed: number; total: number; extra: string; onStart: () => void }) {
+function ModuleCard({ number, title, description, translation, translationOpen, onToggleTranslation, icon, completed, total, extra, onStart, onTips }: { number: string; title: string; description: string; translation: string; translationOpen: boolean; onToggleTranslation: () => void; icon: React.ReactNode; completed: number; total: number; extra: string; onStart: () => void; onTips?: () => void }) {
   const percent = total ? Math.round((completed / total) * 100) : 0;
   return (
     <section className="rounded-[22px] border border-[#ddd7ca] bg-white p-5 shadow-sm">
-      <div className="flex items-start gap-4"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#10243f] text-white">{icon}</div><div className="min-w-0 flex-1"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9a7628]">Teil {number}</p><h2 className="mt-1 text-xl font-bold text-[#10243f]">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{description}</p></div></div>
+      <div className="flex items-start gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#10243f] text-white">{icon}</div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9a7628]">Teil {number}</p>
+              <h2 className="mt-1 text-xl font-bold text-[#10243f]">{title}</h2>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {onTips && <SecretsButton onClick={onTips} />}
+              <TranslationButton open={translationOpen} onClick={onToggleTranslation} />
+            </div>
+          </div>
+          <p className="mt-2 text-sm leading-6 text-slate-700">{description}</p>
+          {translationOpen && (
+            <div className="mt-3 rounded-xl border border-[#e4d3a7] bg-[#fbf6e9] p-3 text-sm leading-6 text-slate-700">
+              <p className="mb-1 text-xs font-black uppercase tracking-[0.12em] text-[#9a7628]">По-русски</p>
+              <p>{translation}</p>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#f3f1ec] p-3"><p className="text-xs text-slate-500">Выполнено</p><p className="mt-1 text-lg font-black text-[#10243f]">{completed} / {total}</p></div><div className="rounded-xl bg-[#f3f1ec] p-3"><p className="text-xs text-slate-500">Результат</p><p className="mt-1 text-sm font-bold text-[#10243f]">{extra}</p></div></div>
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e4dfd5]"><div className="h-full rounded-full bg-[#c69b3c]" style={{ width: `${percent}%` }} /></div>
       <button type="button" onClick={onStart} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#10243f] px-5 py-3 font-semibold text-white">Тренироваться <ChevronRight className="h-4 w-4" /></button>
