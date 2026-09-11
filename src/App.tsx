@@ -37,10 +37,16 @@ export default function App() {
   const globalEye = view === 'mock-exam';
 
   return (
-    <div className="telegram-app min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+    <div className="telegram-app otto-skin min-h-screen">
+      <div className="otto-backdrop" aria-hidden="true">
+        <div className="otto-glow otto-glow-a" />
+        <div className="otto-glow otto-glow-b" />
+        <div className="otto-line-art" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-8">
         {globalEye && <PageTranslationEye scopeId="otto-current-task" />}
-        <div id={globalEye ? 'otto-current-task' : undefined}>
+        <div id={globalEye ? 'otto-current-task' : undefined} className={view === null ? '' : 'otto-inner-screen'}>
           {view === null && <Dashboard onSelectModule={setView} onOpenInstructions={() => setView('instructions')} onOpenExamGuide={() => setView('exam-guide')} onOpenMockExam={() => setView('mock-exam')} progress={progress} />}
           {view === 'instructions' && <Instructions onBack={back} />}
           {view === 'exam-guide' && <ExamGuide onBack={back} />}
@@ -51,6 +57,14 @@ export default function App() {
           {view === 'sprechen' && <SpeakingModule onBack={back} onComplete={complete('sprechen')} />}
         </div>
       </div>
+
+      {view !== null && (
+        <div className="otto-companion" aria-hidden="true">
+          <div className="otto-companion-crop">
+            <img src="/otto.png" alt="" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
