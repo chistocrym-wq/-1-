@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dashboard } from '@/components/Dashboard';
 import { Instructions } from '@/components/Instructions';
 import { ExamGuide } from '@/components/ExamGuide';
 import { MockExam } from '@/components/MockExam';
+import { ModulesHub } from '@/components/ModulesHub';
+import { AccountPage } from '@/components/AccountPage';
+import { SettingsPage } from '@/components/SettingsPage';
+import { NewsPage } from '@/components/NewsPage';
+import { BottomNav, type BottomTab } from '@/components/BottomNav';
 import { PageTranslationEye } from '@/components/common/PageTranslationEye';
 import { ReadingModule } from '@/components/modules/ReadingModule';
 import { ListeningModule } from '@/components/modules/ListeningModule';
@@ -13,7 +18,7 @@ import type { ModuleId } from '@/types';
 import { OTTO_CHARACTER_SRC } from './ottoCharacter';
 import '@/data/lesen/registerExtraSets';
 
-type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | null;
+type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | 'modules' | 'account' | 'settings' | 'news' | null;
 
 export default function App() {
   const [view, setView] = useState<View>(null);
@@ -38,6 +43,23 @@ export default function App() {
   const globalEye = view === 'mock-exam';
   const viewClass = `otto-view-${view ?? 'home'}`;
 
+  const activeTab = useMemo<BottomTab>(() => {
+    if (view === null || view === 'mock-exam' || view === 'news') return 'home';
+    if (view === 'modules' || view === 'lesen' || view === 'horen' || view === 'schreiben' || view === 'sprechen') return 'modules';
+    if (view === 'exam-guide' || view === 'instructions') return 'guides';
+    if (view === 'account') return 'account';
+    return 'settings';
+  }, [view]);
+
+  const navigateBottom = useCallback((tab: BottomTab) => {
+    if (tab === 'home') setView(null);
+    if (tab === 'modules') setView('modules');
+    if (tab === 'guides') setView('exam-guide');
+    if (tab === 'account') setView('account');
+    if (tab === 'settings') setView('settings');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className={`telegram-app otto-skin ${viewClass} min-h-screen`}>
       <div className="otto-backdrop" aria-hidden="true">
@@ -46,10 +68,14 @@ export default function App() {
         <div className="otto-line-art" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto max-w-4xl px-3 py-4 pb-28 sm:px-6 sm:py-8 sm:pb-32">
         {globalEye && <PageTranslationEye scopeId="otto-current-task" />}
         <div id={globalEye ? 'otto-current-task' : undefined} className={view === null ? '' : 'otto-inner-screen'}>
-          {view === null && <Dashboard onSelectModule={setView} onOpenInstructions={() => setView('instructions')} onOpenExamGuide={() => setView('exam-guide')} onOpenMockExam={() => setView('mock-exam')} progress={progress} />}
+          {view === null && <Dashboard onSelectModule={setView} onOpenInstructions={() => setView('instructions')} onOpenExamGuide={() => setView('exam-guide')} onOpenMockExam={() => setView('mock-exam')} onOpenNews={() => setView('news')} onOpenAccount={() => setView('account')} progress={progress} />}
+          {view === 'modules' && <ModulesHub progress={progress} onSelectModule={setView} />}
+          {view === 'account' && <AccountPage progress={progress} />}
+          {view === 'settings' && <SettingsPage />}
+          {view === 'news' && <NewsPage onBack={back} />}
           {view === 'instructions' && <Instructions onBack={back} />}
           {view === 'exam-guide' && <ExamGuide onBack={back} />}
           {view === 'mock-exam' && <MockExam onBack={back} />}
@@ -60,13 +86,13 @@ export default function App() {
         </div>
       </div>
 
-      {view !== null && (
+      {view !== null && view !== 'account' && view !== 'settings' && view !== 'modules' && (
         <div className="otto-companion" aria-hidden="true">
-          <div className="otto-companion-crop">
-            <img src={OTTO_CHARACTER_SRC} alt="" />
-          </div>
+          <div className="otto-companion-crop"><img src={OTTO_CHARACTER_SRC} alt="" /></div>
         </div>
       )}
+
+      <BottomNav active={activeTab} onNavigate={navigateBottom} />
     </div>
   );
 }
