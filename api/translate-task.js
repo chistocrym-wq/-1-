@@ -1,4 +1,4 @@
-const MAX_PARTS = 12;
+const MAX_PARTS = 40;
 const MAX_TOTAL = 7000;
 
 export default async function handler(req, res) {
@@ -12,7 +12,10 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-    const parts = Array.isArray(body.parts) ? body.parts.map((value) => String(value || '').trim()).filter(Boolean).slice(0, MAX_PARTS) : [];
+    const parts = Array.isArray(body.parts)
+      ? body.parts.map((value) => String(value || '').trim()).filter(Boolean).slice(0, MAX_PARTS)
+      : [];
+
     if (!parts.length) return res.status(400).json({ error: 'Нет текста для перевода.' });
     if (parts.join('\n').length > MAX_TOTAL) return res.status(413).json({ error: 'Слишком большой текст для перевода.' });
 
@@ -25,7 +28,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content: 'Переведи каждый элемент массива с немецкого на простой естественный русский. Это учебный Goethe A1. Переводи строго смысл, имена, даты, время и числа сохраняй. Не решай задание, не подсказывай правильный ответ и не добавляй объяснений. Верни ровно столько переводов, сколько входных элементов.',
+            content: 'Переведи каждый элемент массива с немецкого на простой естественный русский. Это учебный Goethe A1. Переводи строго смысл, имена, даты, время и числа сохраняй. Если элемент уже написан по-русски, верни его без изменений. Не решай задание, не подсказывай правильный ответ и не добавляй объяснений. Верни ровно столько переводов, сколько входных элементов.',
           },
           { role: 'user', content: JSON.stringify(parts) },
         ],
