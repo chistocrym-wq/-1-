@@ -16,23 +16,24 @@ export function useProgress() {
   const [progress, setProgress] = useState<Progress>(loadProgress);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    } catch {
-      // ignore
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch { /* ignore */ }
   }, [progress]);
 
   const recordScore = useCallback((key: string, score: number, total: number) => {
+    if (!Number.isFinite(score) || !Number.isFinite(total) || total <= 0) return;
     setProgress((prev) => {
       const existing = prev[key];
-      const scorePercent = total > 0 ? Math.round((score / total) * 100) : 0;
-      const completed = Math.max(existing?.completed ?? 0, score === total ? 1 : 0);
+      const safeScore = Math.max(0, Math.min(total, score));
+      const answered = (existing?.answered ?? 0) + total;
+      const correct = (existing?.correct ?? 0) + safeScore;
+      const scorePercent = Math.round((safeScore / total) * 100);
       return {
         ...prev,
         [key]: {
-          completed,
-          total,
+          completed: answered,
+          total: answered,
+          answered,
+          correct,
           bestScore: Math.max(existing?.bestScore ?? 0, scorePercent),
           lastScore: scorePercent,
           attempts: (existing?.attempts ?? 0) + 1,
@@ -42,20 +43,8 @@ export function useProgress() {
   }, []);
 
   const markCompleted = useCallback((key: string, total: number) => {
-    setProgress((prev) => {
-      const existing = prev[key];
-      return {
-        ...prev,
-        [key]: {
-          completed: 1,
-          total,
-          bestScore: existing?.bestScore ?? 100,
-          lastScore: existing?.lastScore ?? 100,
-          attempts: (existing?.attempts ?? 0) + 1,
-        } as ModuleProgress,
-      };
-    });
-  }, []);
+    recordScore(key, total, total);
+  }, [recordScore]);
 
   const resetProgress = useCallback(() => {
     setProgress({});
