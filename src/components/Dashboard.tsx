@@ -4,6 +4,7 @@ import type { ModuleId, Progress } from '@/types';
 import { ProgressBar } from '@/components/ProgressBar';
 import { cn } from '@/lib/utils';
 import { languages, translations, type Language } from '../i18n';
+import { OTTO_CHARACTER_SRC } from '../ottoCharacter';
 
 interface DashboardProps {
   onSelectModule: (module: ModuleId) => void;
@@ -69,9 +70,9 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
             <div className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-bold shadow-sm otto-soft-accent">{t.assistant} · {t.assistantSub}</div>
           </div>
 
-          <div className="relative mx-auto h-[240px] w-full max-w-[330px] overflow-hidden sm:h-[300px]">
+          <div className="otto-main-character-frame relative mx-auto h-[240px] w-full max-w-[330px] overflow-hidden sm:h-[300px]">
             <div className="absolute inset-x-5 bottom-0 top-6 rounded-t-[60px] bg-[radial-gradient(circle_at_50%_20%,rgba(15,125,116,.18),rgba(255,255,255,.3)_58%,transparent_75%)]" />
-            <img src="/otto.png" alt="Отто — помощник" className="absolute left-1/2 top-0 h-[390px] w-[390px] max-w-none -translate-x-1/2 object-cover object-top drop-shadow-[0_20px_28px_rgba(15,23,42,.18)] sm:h-[440px] sm:w-[440px]" />
+            <img src={OTTO_CHARACTER_SRC} alt="Отто — помощник" className="otto-main-character absolute left-1/2 top-0 max-w-none -translate-x-1/2 object-cover object-top drop-shadow-[0_20px_28px_rgba(15,23,42,.18)]" />
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent" />
           </div>
         </div>
