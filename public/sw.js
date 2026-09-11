@@ -1,4 +1,4 @@
-const CACHE_NAME = 'otto-a1-v5';
+const CACHE_NAME = 'otto-a1-v6';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
