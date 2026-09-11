@@ -58,7 +58,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center;
+        object-position: 50% 17%;
         border-radius: 50%;
       }
 
@@ -158,7 +158,7 @@
   <body>
     <div id="otto-launch" aria-hidden="true">
       <div class="otto-launch__avatar">
-        <img src="/otto-icon-512.webp" alt="" decoding="sync" fetchpriority="high" />
+        <img src="/otto-splash-hq.webp" alt="" decoding="sync" fetchpriority="high" />
       </div>
       <img
         class="otto-launch__hero"
@@ -218,24 +218,19 @@
           return;
         }
 
-        // 0–0.8 s: round Otto avatar on brand teal.
         window.setTimeout(function () {
           splash.classList.add('avatar-hidden');
         }, 820);
 
-        // 0.8–3.0 s: clean teal screen only.
-        // At 3 s Otto appears smoothly full height.
         window.setTimeout(function () {
           splash.classList.add('show-otto');
         }, 3000);
 
-        // Around 6.15 s the splash breaks into transparent fragments.
         window.setTimeout(function () {
           makeParticles();
           splash.classList.add('dissolve');
         }, 6150);
 
-        // Reveal the already-rendered main screen underneath.
         window.setTimeout(function () {
           splash.classList.add('is-leaving');
         }, 7240);
@@ -244,7 +239,6 @@
           if (splash.parentNode) splash.parentNode.removeChild(splash);
         }, 7900);
 
-        // Safety valve if a browser throttles timers badly.
         window.setTimeout(function () {
           if (document.body.contains(splash)) {
             splash.classList.add('is-leaving');
