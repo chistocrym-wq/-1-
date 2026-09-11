@@ -16,6 +16,7 @@ import { SpeakingModule } from '@/components/modules/SpeakingModule';
 import { useProgress } from '@/hooks/useProgress';
 import type { ModuleId } from '@/types';
 import { OTTO_CHARACTER_SRC } from './ottoCharacter';
+import './ottoDesignV2.css';
 import '@/data/lesen/registerExtraSets';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | 'modules' | 'account' | 'settings' | 'news' | null;
