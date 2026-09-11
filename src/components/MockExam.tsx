@@ -1,5 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Clock, Trophy, RotateCcw, BookOpen, Headphones, Volume2, Play, Pause, CheckCircle2, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Headphones,
+  Pause,
+  Play,
+  RotateCcw,
+  Trophy,
+  Volume2,
+  XCircle,
+} from 'lucide-react';
 import { readingTasks } from '@/data/reading';
 import { listeningTasks } from '@/data/listening';
 import type { MultipleChoiceQuestion, TrueFalseQuestion } from '@/types';
@@ -18,44 +30,58 @@ interface ExamQuestion {
   question: MultipleChoiceQuestion | TrueFalseQuestion;
 }
 
+const EXAM_DURATION = 20 * 60;
+
 function buildExamQuestions(): ExamQuestion[] {
-  const questions: ExamQuestion[] = [];
+  const result: ExamQuestion[] = [];
 
   for (const task of readingTasks) {
-    for (const q of task.questions) {
-      questions.push({
-        id: q.id,
+    for (const question of task.questions) {
+      result.push({
+        id: question.id,
         module: 'lesen',
         taskTitle: task.title,
         text: task.text,
-        question: q,
+        question,
       });
     }
   }
 
   for (const task of listeningTasks) {
-    for (const q of task.questions) {
-      questions.push({
-        id: q.id,
-        module: 'horen',
-        taskTitle: task.title,
-        audioText: task.audioText,
-        question: q,
-      });
-    }
+    const question: MultipleChoiceQuestion | TrueFalseQuestion =
+      task.type === 'multiple-choice'
+        ? {
+            id: task.id,
+            type: 'multiple-choice',
+            prompt: task.prompt,
+            options: task.options,
+            correctIndex: task.correctIndex,
+          }
+        : {
+            id: task.id,
+            type: 'true-false',
+            prompt: task.prompt,
+            correctAnswer: task.correctAnswer,
+          };
+
+    result.push({
+      id: task.id,
+      module: 'horen',
+      taskTitle: task.title,
+      audioText: task.audioText,
+      question,
+    });
   }
 
-  return questions;
+  return result;
 }
 
-const EXAM_DURATION = 20 * 60;
-
 export function MockExam({ onBack }: MockExamProps) {
+  const questions = useMemo(buildExamQuestions, []);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [questions] = useState(buildExamQuestions);
   const [answers, setAnswers] = useState<(number | boolean | null)[]>(() =>
-    Array(buildExamQuestions().length).fill(null)
+    Array(questions.length).fill(null)
   );
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION);
 
@@ -65,442 +91,288 @@ export function MockExam({ onBack }: MockExamProps) {
       setFinished(true);
       return;
     }
-    const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearTimeout(timer);
+    const timer = window.setTimeout(() => setTimeLeft((value) => value - 1), 1000);
+    return () => window.clearTimeout(timer);
   }, [started, finished, timeLeft]);
 
   const handleAnswer = useCallback((index: number, value: number | boolean) => {
-    setAnswers((prev) => {
-      const next = [...prev];
+    setAnswers((previous) => {
+      const next = [...previous];
       next[index] = value;
       return next;
     });
   }, []);
 
-  const handleStart = () => {
-    setStarted(true);
+  const start = () => {
     setAnswers(Array(questions.length).fill(null));
     setTimeLeft(EXAM_DURATION);
-  };
-
-  const handleFinish = () => setFinished(true);
-
-  const handleRetry = () => {
-    setStarted(false);
     setFinished(false);
-    setAnswers(Array(questions.length).fill(null));
-    setTimeLeft(EXAM_DURATION);
+    setStarted(true);
   };
 
-  const formatTime = (s: number) => {
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Calculate score
-  const calculateScore = () => {
-    let correct = 0;
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i].question;
-      const ans = answers[i];
-      if (ans === null) continue;
-      if (q.type === 'multiple-choice') {
-        if (ans === (q as MultipleChoiceQuestion).correctIndex) correct++;
-      } else {
-        if (ans === (q as TrueFalseQuestion).correctAnswer) correct++;
-      }
-    }
-    return { correct, total: questions.length };
-  };
-
-  // Start screen
   if (!started) {
     return (
       <div className="animate-fade-in">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={onBack}
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"
-          >
-            <ArrowLeft className="w-5 h-5 text-slate-600" />
-          </button>
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">Тестовый экзамен</h2>
-            <p className="text-sm text-slate-500">Проверьте свою готовность</p>
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-gradient-to-br from-teal-600 to-cyan-800 p-8 mb-6 text-center shadow-xl">
-          <Trophy className="w-12 h-12 text-white mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-white mb-2">Модельный экзамен A1</h3>
-          <p className="text-white/80 mb-6 max-w-md mx-auto">
-            Полный тест по чтению и аудированию в условиях, приближенных к экзамену.
-            Время ограничено — 20 минут.
+        <Header onBack={onBack} />
+        <div className="rounded-2xl bg-slate-900 p-7 text-center text-white shadow-xl sm:p-9">
+          <Trophy className="mx-auto mb-4 h-11 w-11" />
+          <h2 className="text-2xl font-bold">Модельный экзамен A1</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-white/75">
+            Чтение и аудирование в одном ограниченном по времени тесте.
           </p>
-          <div className="flex justify-center gap-4 mb-6">
-            <div className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm">
-              <span className="text-white font-semibold">{questions.length}</span>
-              <span className="text-white/60 text-sm ml-1">вопросов</span>
-            </div>
-            <div className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm">
-              <span className="text-white font-semibold">20:00</span>
-              <span className="text-white/60 text-sm ml-1">минут</span>
-            </div>
+          <div className="mt-5 flex justify-center gap-3 text-sm">
+            <span className="rounded-full bg-white/10 px-4 py-2">{questions.length} заданий</span>
+            <span className="rounded-full bg-white/10 px-4 py-2">20 минут</span>
           </div>
           <button
-            onClick={handleStart}
-            className="px-8 py-3 rounded-xl bg-white text-teal-700 font-semibold hover:bg-teal-50 transition-colors"
+            type="button"
+            onClick={start}
+            className="mt-6 min-h-[48px] rounded-xl bg-white px-7 py-3 font-semibold text-slate-900 hover:bg-slate-100"
           >
             Начать экзамен
           </button>
         </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h4 className="font-semibold text-slate-900 mb-3">Что вас ждёт:</h4>
-          <div className="space-y-2">
-            <div className="flex items-start gap-3">
-              <BookOpen className="w-5 h-5 text-teal-700 mt-0.5 shrink-0" />
-              <p className="text-sm text-slate-600">
-                <b>Lesen</b> — {readingTasks.reduce((acc, t) => acc + t.questions.length, 0)} вопросов по текстам для чтения
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <Headphones className="w-5 h-5 text-sky-700 mt-0.5 shrink-0" />
-              <p className="text-sm text-slate-600">
-                <b>Hören</b> — {listeningTasks.reduce((acc, t) => acc + t.questions.length, 0)} вопросов по аудированию (с озвучкой)
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
 
-  // Results screen
   if (finished) {
-    const { correct, total } = calculateScore();
-    const percent = Math.round((correct / total) * 100);
-    const passed = percent >= 60;
-
-    const lesenQuestions = questions.filter((q) => q.module === 'lesen');
-    const horenQuestions = questions.filter((q) => q.module === 'horen');
-
-    const calcModuleScore = (qs: ExamQuestion[]) => {
-      let c = 0;
-      for (const q of qs) {
-        const idx = questions.indexOf(q);
-        const ans = answers[idx];
-        if (ans === null) continue;
-        if (q.question.type === 'multiple-choice') {
-          if (ans === (q.question as MultipleChoiceQuestion).correctIndex) c++;
-        } else {
-          if (ans === (q.question as TrueFalseQuestion).correctAnswer) c++;
-        }
-      }
-      return { correct: c, total: qs.length };
-    };
-
-    const lesenScore = calcModuleScore(lesenQuestions);
-    const horenScore = calcModuleScore(horenQuestions);
-
+    const score = calculateScore(questions, answers);
+    const percent = Math.round((score / questions.length) * 100);
     return (
-      <div className="animate-scale-in flex flex-col items-center py-8">
-        <div className={cn(
-          'flex items-center justify-center w-20 h-20 rounded-full mb-6',
-          passed ? 'bg-emerald-50' : 'bg-rose-50'
-        )}>
-          <Trophy className={cn('w-10 h-10', passed ? 'text-emerald-600' : 'text-rose-600')} />
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">
-          {passed ? 'Экзамен сдан!' : 'Экзамен не сдан'}
-        </h2>
-        <p className="text-slate-500 mb-2 text-center">
-          {passed
-            ? 'Поздравляем! Вы набрали проходной балл.'
-            : 'Не расстраивайтесь — потренируйтесь ещё и попробуйте снова.'}
-        </p>
-        <div className={cn(
-          'text-6xl font-bold mb-8',
-          passed ? 'text-emerald-600' : 'text-rose-600'
-        )}>
-          {percent}%
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 w-full max-w-md">
-          <div className="rounded-xl border border-teal-200 bg-teal-50 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="w-4 h-4 text-teal-700" />
-              <span className="text-sm font-medium text-teal-700">Lesen</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-900">{lesenScore.correct} / {lesenScore.total}</p>
+      <div className="animate-fade-in">
+        <Header onBack={onBack} />
+        <div className="rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
+          <Trophy className="mx-auto h-12 w-12 text-slate-700" />
+          <h2 className="mt-4 text-2xl font-bold text-slate-950">Результат</h2>
+          <div className="mt-3 text-5xl font-black text-slate-950">{percent}%</div>
+          <p className="mt-2 text-slate-600">{score} из {questions.length} правильных ответов</p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={start}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-700"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Пройти заново
+            </button>
+            <button
+              type="button"
+              onClick={onBack}
+              className="min-h-[48px] rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white"
+            >
+              К модулям
+            </button>
           </div>
-          <div className="rounded-xl border border-sky-200 bg-sky-50 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Headphones className="w-4 h-4 text-sky-700" />
-              <span className="text-sm font-medium text-sky-700">Hören</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-900">{horenScore.correct} / {horenScore.total}</p>
-          </div>
-        </div>
-
-        {/* Answer review */}
-        <div className="w-full max-w-2xl mb-8">
-          <h3 className="font-semibold text-slate-900 mb-3">Разбор ответов</h3>
-          <div className="space-y-2 max-h-80 overflow-y-auto">
-            {questions.map((q, i) => {
-              const ans = answers[i];
-              const isCorrect = q.question.type === 'multiple-choice'
-                ? ans === (q.question as MultipleChoiceQuestion).correctIndex
-                : ans === (q.question as TrueFalseQuestion).correctAnswer;
-              const isAnswered = ans !== null;
-              return (
-                <div
-                  key={q.id}
-                  className={cn(
-                    'flex items-center gap-3 p-3 rounded-xl border',
-                    !isAnswered ? 'border-slate-200 bg-slate-50' :
-                    isCorrect ? 'border-emerald-200 bg-emerald-50' :
-                    'border-rose-200 bg-rose-50'
-                  )}
-                >
-                  {isAnswered ? (
-                    isCorrect
-                      ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      : <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                  ) : (
-                    <span className="w-4 h-4 rounded-full border-2 border-slate-300 shrink-0" />
-                  )}
-                  <span className="text-xs text-slate-400 shrink-0">{q.module === 'lesen' ? 'Lesen' : 'Hören'}</span>
-                  <span className="text-sm text-slate-700 flex-1 truncate">{q.question.prompt}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={handleRetry}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Пройти заново
-          </button>
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors"
-          >
-            К модулям
-          </button>
         </div>
       </div>
     );
   }
 
-  // Exam screen
-  const answeredCount = answers.filter((a) => a !== null).length;
-  const isLowTime = timeLeft < 60;
+  const answered = answers.filter((answer) => answer !== null).length;
+  const lowTime = timeLeft < 60;
 
   return (
-    <div className="animate-fade-in">
-      {/* Sticky timer header */}
-      <div className="sticky top-0 z-10 -mx-4 px-4 py-3 mb-6 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"
-            >
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
-            </button>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Тестовый экзамен</h2>
-              <p className="text-xs text-slate-500">
-                Отвечено: {answeredCount} / {questions.length}
-              </p>
-            </div>
-          </div>
-          <div className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-bold tabular-nums transition-colors',
-            isLowTime ? 'bg-rose-100 text-rose-700' : 'bg-slate-900 text-white'
-          )}>
-            <Clock className="w-4 h-4" />
+    <div className="animate-fade-in pb-8">
+      <div className="sticky top-0 z-10 -mx-4 mb-5 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <Header onBack={onBack} compact />
+          <div
+            className={cn(
+              'inline-flex items-center gap-2 rounded-xl px-3 py-2 font-mono text-sm font-bold',
+              lowTime ? 'bg-rose-100 text-rose-700' : 'bg-slate-900 text-white'
+            )}
+          >
+            <Clock className="h-4 w-4" />
             {formatTime(timeLeft)}
           </div>
         </div>
+        <p className="mt-2 text-xs text-slate-500">Отвечено: {answered} / {questions.length}</p>
       </div>
 
-      {/* Questions */}
-      <div className="space-y-6">
-        {questions.map((q, i) => (
+      <div className="space-y-5">
+        {questions.map((item, index) => (
           <ExamQuestionCard
-            key={q.id}
-            examQuestion={q}
-            index={i}
-            selected={answers[i]}
+            key={`${item.module}-${item.id}`}
+            item={item}
+            index={index}
+            selected={answers[index]}
             onAnswer={handleAnswer}
           />
         ))}
       </div>
 
-      {/* Finish button */}
-      <div className="mt-8 flex flex-col items-center gap-3">
+      <div className="mt-7 flex justify-center">
         <button
-          onClick={handleFinish}
-          className="flex items-center gap-2 px-8 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:opacity-90 transition-all"
+          type="button"
+          onClick={() => setFinished(true)}
+          className="inline-flex min-h-[50px] items-center gap-2 rounded-xl bg-slate-900 px-7 py-3 font-semibold text-white"
         >
-          <CheckCircle2 className="w-5 h-5" />
+          <CheckCircle2 className="h-5 w-5" />
           Завершить экзамен
         </button>
-        <p className="text-sm text-slate-400">
-          {answeredCount < questions.length
-            ? `Осталось без ответа: ${questions.length - answeredCount}`
-            : 'Все вопросы отвечены!'}
-        </p>
       </div>
     </div>
   );
 }
 
-interface ExamQuestionCardProps {
-  examQuestion: ExamQuestion;
+function Header({ onBack, compact = false }: { onBack: () => void; compact?: boolean }) {
+  return (
+    <div className={cn('flex items-center gap-3', !compact && 'mb-6')}>
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white"
+        aria-label="Назад"
+      >
+        <ArrowLeft className="h-5 w-5 text-slate-600" />
+      </button>
+      <div>
+        <h1 className={cn('font-bold text-slate-950', compact ? 'text-base' : 'text-xl')}>Тестовый экзамен</h1>
+        {!compact && <p className="text-sm text-slate-500">Lesen + Hören</p>}
+      </div>
+    </div>
+  );
+}
+
+function ExamQuestionCard({
+  item,
+  index,
+  selected,
+  onAnswer,
+}: {
+  item: ExamQuestion;
   index: number;
   selected: number | boolean | null;
   onAnswer: (index: number, value: number | boolean) => void;
-}
-
-function ExamQuestionCard({ examQuestion, index, selected, onAnswer }: ExamQuestionCardProps) {
-  const { question, module, text, audioText } = examQuestion;
+}) {
   const [showText, setShowText] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
-  const speak = useCallback(() => {
-    if (!audioText || typeof window === 'undefined' || !window.speechSynthesis) return;
+  const play = () => {
+    if (!item.audioText || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(audioText);
+    const utterance = new SpeechSynthesisUtterance(item.audioText);
     utterance.lang = 'de-DE';
     utterance.rate = 0.9;
-    const voices = window.speechSynthesis.getVoices();
-    const germanVoice = voices.find((v) => v.lang.startsWith('de'));
-    if (germanVoice) utterance.voice = germanVoice;
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => setIsPlaying(false);
+    utterance.onend = () => setPlaying(false);
+    utterance.onerror = () => setPlaying(false);
     window.speechSynthesis.speak(utterance);
-    setIsPlaying(true);
-  }, [audioText]);
+    setPlaying(true);
+  };
 
-  const stop = useCallback(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlaying(false);
-  }, []);
+  const stop = () => {
+    window.speechSynthesis?.cancel();
+    setPlaying(false);
+  };
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <span className={cn(
-          'text-xs font-semibold px-2 py-1 rounded-full',
-          module === 'lesen' ? 'bg-teal-100 text-teal-700' : 'bg-sky-100 text-sky-700'
-        )}>
-          {module === 'lesen' ? 'Lesen' : 'Hören'}
+      <div className="mb-3 flex items-center gap-2">
+        {item.module === 'lesen' ? (
+          <BookOpen className="h-4 w-4 text-teal-700" />
+        ) : (
+          <Headphones className="h-4 w-4 text-sky-700" />
+        )}
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          {item.module === 'lesen' ? 'Lesen' : 'Hören'} · {item.taskTitle}
         </span>
-        <span className="text-xs text-slate-400">{examQuestion.taskTitle}</span>
       </div>
 
-      {/* Reading text toggle */}
-      {text && (
-        <div className="mb-3">
+      {item.text && (
+        <div className="mb-4">
           <button
-            onClick={() => setShowText((s) => !s)}
-            className="flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 transition-colors"
+            type="button"
+            onClick={() => setShowText((value) => !value)}
+            className="text-sm font-semibold text-teal-700"
           >
-            <BookOpen className="w-4 h-4" />
             {showText ? 'Скрыть текст' : 'Показать текст'}
           </button>
           {showText && (
-            <div className="mt-3 p-4 rounded-xl bg-slate-50 border border-slate-200 animate-fade-in">
-              <p className="text-slate-700 whitespace-pre-line leading-relaxed text-sm">{text}</p>
+            <div className="mt-3 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700 whitespace-pre-line">
+              {item.text}
             </div>
           )}
         </div>
       )}
 
-      {/* Listening audio */}
-      {audioText && (
-        <div className="mb-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={isPlaying ? stop : speak}
-              className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-105',
-                isPlaying ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 border-2 border-sky-200'
-              )}
-            >
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-            </button>
-            <div className="flex items-center gap-1.5 text-sky-700 text-sm">
-              <Volume2 className="w-4 h-4" />
-              <span>{isPlaying ? 'Воспроизведение...' : 'Прослушать'}</span>
-            </div>
-          </div>
-        </div>
+      {item.audioText && (
+        <button
+          type="button"
+          onClick={playing ? stop : play}
+          className="mb-4 inline-flex min-h-[42px] items-center gap-2 rounded-xl bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-800"
+        >
+          {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          <Volume2 className="h-4 w-4" />
+          {playing ? 'Остановить' : 'Прослушать'}
+        </button>
       )}
 
-      {/* Question */}
-      <div className="flex items-start gap-3 mb-4">
-        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-semibold text-sm shrink-0">
+      <div className="mb-4 flex items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600">
           {index + 1}
         </span>
-        <p className="text-slate-900 font-medium pt-0.5">{question.prompt}</p>
+        <p className="pt-1 font-medium text-slate-900">{item.question.prompt}</p>
       </div>
 
-      {/* Options */}
-      {question.type === 'multiple-choice' ? (
-        <div className="space-y-2.5 ml-11">
-          {(question as MultipleChoiceQuestion).options.map((option, i) => (
+      {item.question.type === 'multiple-choice' ? (
+        <div className="ml-0 space-y-2 sm:ml-11">
+          {item.question.options.map((option, optionIndex) => (
             <button
-              key={i}
-              onClick={() => onAnswer(index, i)}
+              key={option}
+              type="button"
+              onClick={() => onAnswer(index, optionIndex)}
               className={cn(
-                'flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-200',
-                selected === i
+                'flex min-h-[46px] w-full items-center gap-3 rounded-xl border-2 px-4 py-2 text-left',
+                selected === optionIndex
                   ? 'border-teal-500 bg-teal-50'
-                  : 'border-slate-200 hover:border-teal-300 hover:bg-teal-50/50'
+                  : 'border-slate-200 hover:border-slate-300'
               )}
             >
-              <span className={cn(
-                'flex items-center justify-center w-6 h-6 rounded-full border-2 text-xs font-bold shrink-0',
-                selected === i ? 'border-teal-500 bg-teal-500 text-white' : 'border-slate-300 text-slate-400'
-              )}>
-                {String.fromCharCode(65 + i)}
-              </span>
+              <span className="font-bold text-slate-500">{String.fromCharCode(65 + optionIndex)}</span>
               <span className="text-slate-800">{option}</span>
             </button>
           ))}
         </div>
       ) : (
-        <div className="flex gap-3 ml-11">
+        <div className="ml-0 grid grid-cols-2 gap-3 sm:ml-11">
           {[
-            { label: 'Richtig', value: true },
-            { label: 'Falsch', value: false },
-          ].map((opt) => (
+            { value: true, label: 'Richtig' },
+            { value: false, label: 'Falsch' },
+          ].map((option) => (
             <button
-              key={String(opt.value)}
-              onClick={() => onAnswer(index, opt.value)}
+              key={String(option.value)}
+              type="button"
+              onClick={() => onAnswer(index, option.value)}
               className={cn(
-                'px-6 py-3 rounded-xl border-2 font-medium transition-all duration-200',
-                selected === opt.value
-                  ? 'border-teal-500 bg-teal-50 text-teal-700'
-                  : 'border-slate-200 hover:border-teal-300 text-slate-700'
+                'min-h-[46px] rounded-xl border-2 px-4 py-2 font-medium',
+                selected === option.value
+                  ? 'border-teal-500 bg-teal-50 text-teal-800'
+                  : 'border-slate-200 text-slate-700'
               )}
             >
-              {opt.label}
+              {option.label}
             </button>
           ))}
         </div>
       )}
     </div>
   );
+}
+
+function calculateScore(questions: ExamQuestion[], answers: (number | boolean | null)[]) {
+  return questions.reduce((score, item, index) => {
+    const answer = answers[index];
+    if (answer === null) return score;
+    if (item.question.type === 'multiple-choice') {
+      return score + (answer === item.question.correctIndex ? 1 : 0);
+    }
+    return score + (answer === item.question.correctAnswer ? 1 : 0);
+  }, 0);
+}
+
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${minutes}:${rest.toString().padStart(2, '0')}`;
 }
