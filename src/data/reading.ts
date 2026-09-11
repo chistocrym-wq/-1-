@@ -1,16 +1,19 @@
-import type { ReadingTask } from '../types';
+import type { MultipleChoiceQuestion, TrueFalseQuestion } from '../types';
 
-export const readingTasks: ReadingTask[] = [
+export interface LegacyReadingTask {
+  id: string;
+  title: string;
+  instruction: string;
+  text: string;
+  questions: (MultipleChoiceQuestion | TrueFalseQuestion)[];
+}
+
+export const readingTasks: LegacyReadingTask[] = [
   {
     id: 'lesen-1',
     title: 'Teil 1: Briefe lesen',
     instruction: 'Lesen Sie die Briefe und kreuzen Sie die richtige Antwort an: A, B oder C.',
-    text: `Liebe Frau Müller,
-
-ich bin jeden Tag von 18 bis 20 Uhr im Fitnessstudio. Am Wochenende gehe ich oft schwimmen. Ich brauche keine Hilfe beim Einkaufen, aber danke für das Angebot! Am Samstagabend habe ich eine Party. Kommst du auch?
-
-Viele Grüße
-Anna`,
+    text: `Liebe Frau Müller,\n\nich bin jeden Tag von 18 bis 20 Uhr im Fitnessstudio. Am Wochenende gehe ich oft schwimmen. Ich brauche keine Hilfe beim Einkaufen, aber danke für das Angebot! Am Samstagabend habe ich eine Party. Kommst du auch?\n\nViele Grüße\nAnna`,
     questions: [
       {
         id: 'l1q1',
@@ -50,17 +53,7 @@ Anna`,
     id: 'lesen-2',
     title: 'Teil 2: Informationen finden',
     instruction: 'Lesen Sie die Anzeige und beantworten Sie die Fragen mit Richtig (R) oder Falsch (F).',
-    text: `Sprachkurs Deutsch in Berlin
-
-Wir bieten einen Deutschkurs für Anfänger (A1) an.
-- Kursbeginn: 15. März
-- Kursdauer: 8 Wochen
-- Unterricht: Montag, Mittwoch, Freitag von 9–12 Uhr
-- Preis: 240 Euro (inkl. Material)
-- Anmeldefrist: 1. März
-- Ort: Sprachschule Berlin, Hauptstraße 12
-
-Anmeldung online unter: www.sprachschule-berlin.de`,
+    text: `Sprachkurs Deutsch in Berlin\n\nWir bieten einen Deutschkurs für Anfänger (A1) an.\n- Kursbeginn: 15. März\n- Kursdauer: 8 Wochen\n- Unterricht: Montag, Mittwoch, Freitag von 9–12 Uhr\n- Preis: 240 Euro (inkl. Material)\n- Anmeldefrist: 1. März\n- Ort: Sprachschule Berlin, Hauptstraße 12\n\nAnmeldung online unter: www.sprachschule-berlin.de`,
     questions: [
       {
         id: 'l2q1',
@@ -96,14 +89,7 @@ Anmeldung online unter: www.sprachschule-berlin.de`,
     id: 'lesen-3',
     title: 'Teil 3: Wegbeschreibung lesen',
     instruction: 'Lesen Sie die E-Mail und beantworten Sie die Fragen.',
-    text: `Hallo Thomas,
-
-vielen Dank für deine E-Mail. Du fragst nach dem Weg zum Restaurant. Das ist ganz einfach: Vom Bahnhof gehst du geradeaus bis zur Ampel. Dort biegst du links ab. Dann gehst du an der Post vorbei. Das Restaurant "Bella Italia" ist direkt neben der Apotheke. Die Bushaltestelle ist vor dem Restaurant. Du kannst auch mit dem Bus fahren: Linie 5, Haltestelle "Marktplatz".
-
-Bis Samstag!
-
-Liebe Grüße
-Sabine`,
+    text: `Hallo Thomas,\n\nvielen Dank für deine E-Mail. Du fragst nach dem Weg zum Restaurant. Das ist ganz einfach: Vom Bahnhof gehst du geradeaus bis zur Ampel. Dort biegst du links ab. Dann gehst du an der Post vorbei. Das Restaurant "Bella Italia" ist direkt neben der Apotheke. Die Bushaltestelle ist vor dem Restaurant. Du kannst auch mit dem Bus fahren: Linie 5, Haltestelle "Marktplatz".\n\nBis Samstag!\n\nLiebe Grüße\nSabine`,
     questions: [
       {
         id: 'l3q1',
