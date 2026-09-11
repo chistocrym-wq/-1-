@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Аудиозапись не получена.' });
     }
 
-    if (!['teil1', 'teil2', 'teil3'].includes(mode)) {
+    if (!['teil1', 'teil2', 'teil3', 'free'].includes(mode)) {
       return res.status(400).json({ error: 'Неизвестный тип задания Sprechen.' });
     }
 
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Аудиозапись пустая.' });
     }
     if (audioBuffer.length > MAX_AUDIO_BYTES) {
-      return res.status(413).json({ error: 'Запись слишком длинная. Запишите короткий ответ ещё раз.' });
+      return res.status(413).json({ error: 'Запись слишком длинная. Запишите более короткий ответ.' });
     }
 
     const transcript = await transcribeAudio({ apiKey, audioBuffer, mimeType });
@@ -90,15 +90,16 @@ async function transcribeAudio({ apiKey, audioBuffer, mimeType }) {
 
 async function evaluateAnswer({ apiKey, transcript, body }) {
   const task = buildTaskDescription(body);
-  const systemPrompt = `Ты проверяешь только устную часть Goethe A1 в учебном тренажёре.
-Проверяй смысл сказанного на уровне A1, а не письменную орфографию транскрипта.
+  const systemPrompt = `Ты проверяешь только устную речь немецкого уровня A1 в учебном тренажёре Otto.
+Проверяй смысл сказанного, а не письменную орфографию транскрипта.
 Транскрипция может содержать ошибки распознавания, поэтому не придирайся к отдельным буквам и окончаниям, если смысл понятен.
 Не требуй грамматику B1/B2. Небольшие грамматические ошибки допустимы, если коммуникация понятна.
 Не выставляй фонетический балл и не утверждай, что измерил точное произношение: по транскрипту это невозможно.
 
 Teil 1: проверь, прозвучали ли требуемые пункты о себе. Каждый пункт оценивай по смыслу. Отсутствующие пункты перечисли в missing.
 Teil 2: полный результат, если ученик задал понятный вопрос, связанный и с темой, и с ключевым словом карточки. Допускай разные естественные формулировки A1, не требуй совпадения с примером.
-Teil 3: полный результат, если ученик сформулировал понятную бытовую просьбу или вопрос, соответствующий изображённому предмету/действию. Допускай формы с bitte, Können Sie..., Kann ich..., а также короткие естественные просьбы типа Ein Glas Wasser, bitte.
+Teil 3: полный результат, если ученик сформулировал понятную бытовую просьбу или вопрос, соответствующий изображённому предмету/действию. Допускай формы с bitte, Können Sie..., Kann ich..., а также короткие естественные просьбы.
+Freies Sprechen: проверь, раскрыл ли ученик три опорных вопроса темы и получился ли понятный связный рассказ уровня A1. Не требуй длинного ответа и не штрафуй за естественные паузы. В missing перечисляй только действительно нераскрытые смысловые пункты.
 
 Верни краткую поддержку на русском и одну очень простую подсказку на немецком. Не исправляй то, что уже корректно.`;
 
@@ -130,10 +131,7 @@ Teil 3: полный результат, если ученик сформули�
               score: { type: 'integer', minimum: 0, maximum: 100 },
               feedbackRu: { type: 'string' },
               feedbackDe: { type: 'string' },
-              missing: {
-                type: 'array',
-                items: { type: 'string' },
-              },
+              missing: { type: 'array', items: { type: 'string' } },
             },
           },
         },
@@ -169,5 +167,10 @@ function buildTaskDescription(body) {
     return `Teil 2. Тема: ${String(body.theme || '')}. Слово на карточке: ${String(body.keyword || '')}. Нужно задать один понятный вопрос партнёру. Пример допустимого вопроса дан только как ориентир и не является единственным ответом: ${String(body.sampleQuestion || '')}`;
   }
 
-  return `Teil 3. На карточке изображено: ${String(body.object || '')}. Нужно сформулировать понятную бытовую просьбу или вопрос по карточке. Пример дан только как ориентир: ${String(body.sampleRequest || '')}`;
+  if (body.mode === 'teil3') {
+    return `Teil 3. На карточке изображено: ${String(body.object || '')}. Нужно сформулировать понятную бытовую просьбу или вопрос по карточке. Пример дан только как ориентир: ${String(body.sampleRequest || '')}`;
+  }
+
+  const expected = Array.isArray(body.expectedPoints) ? body.expectedPoints.join(' | ') : '';
+  return `Freies Sprechen. Тема: ${String(body.title || '')}. Ученик должен коротко и связно раскрыть опорные вопросы: ${expected}. Естественные A1 формулировки принимаются.`;
 }
