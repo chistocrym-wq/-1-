@@ -1,8 +1,8 @@
-const CACHE_NAME = 'otto-a1-v2';
+const CACHE_NAME = 'otto-a1-v3';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
-  '/otto.png',
+  '/otto-icon-192.webp',
   '/otto-wave-1.webp',
   '/otto-wave-2.webp'
 ];
