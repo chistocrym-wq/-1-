@@ -3,9 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --color-primary: 13 148 136;
-  }
+  :root { --color-primary: 13 148 136; }
 
   body {
     @apply bg-slate-50 text-slate-900 antialiased;
@@ -18,89 +16,24 @@
     color: var(--tg-theme-text-color, #0f172a);
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
-  }
-  /* ===== Otto: удобная типографика для телефона ===== */
-
-@layer base {
-  body {
     font-size: 17px;
     line-height: 1.55;
   }
 
-  p,
-  li,
-  label,
-  textarea,
-  input {
-    font-size: 17px;
-    line-height: 1.55;
-  }
-
-  button {
-    font-size: 17px;
-    line-height: 1.4;
-    min-height: 48px;
-  }
+  p, li, label, textarea, input { font-size: 17px; line-height: 1.55; }
+  button { font-size: 17px; line-height: 1.4; min-height: 48px; touch-action: manipulation; }
+  button, textarea { font: inherit; }
 }
 
-/* Текст заданий и вопросов */
-.otto-question-text,
-.otto-reading-text,
-.otto-exercise-text {
-  font-size: 18px;
-  line-height: 1.6;
-}
+.otto-question-text, .otto-reading-text, .otto-exercise-text { font-size: 18px; line-height: 1.6; }
+.otto-answer-button, .otto-primary-button { min-height: 52px; font-size: 17px; line-height: 1.4; }
 
-/* Ответы и основные кнопки */
-.otto-answer-button,
-.otto-primary-button {
-  min-height: 52px;
-  font-size: 17px;
-  line-height: 1.4;
-}
-
-/* На телефоне делаем текст ещё немного крупнее */
 @media (max-width: 640px) {
-  body {
-    font-size: 18px;
-  }
-
-  p,
-  li,
-  label,
-  textarea,
-  input {
-    font-size: 18px;
-    line-height: 1.6;
-  }
-
-  button {
-    min-height: 52px;
-    font-size: 17px;
-  }
-
-  .otto-question-text,
-  .otto-reading-text,
-  .otto-exercise-text {
-    font-size: 19px;
-    line-height: 1.65;
-  }
-
-  .otto-answer-button,
-  .otto-primary-button {
-    min-height: 54px;
-    font-size: 17px;
-  }
-}
-
-  button,
-  textarea {
-    font: inherit;
-  }
-
-  button {
-    touch-action: manipulation;
-  }
+  body { font-size: 18px; }
+  p, li, label, textarea, input { font-size: 18px; line-height: 1.6; }
+  button { min-height: 52px; font-size: 17px; }
+  .otto-question-text, .otto-reading-text, .otto-exercise-text { font-size: 19px; line-height: 1.65; }
+  .otto-answer-button, .otto-primary-button { min-height: 54px; font-size: 17px; }
 }
 
 .telegram-app {
@@ -111,8 +44,20 @@
   padding-left: max(env(safe-area-inset-left), var(--tg-content-safe-area-inset-left, 0px));
 }
 
-/* В Schreiben лампочка должна быть понятной без догадки: на телефоне «Секреты»,
-   на более широком экране — полная подпись. */
+/* Любая шапка страницы с кнопкой «Назад» остаётся доступной при прокрутке. */
+.telegram-app .animate-fade-in > div:has(button[aria-label="Назад"]):first-child,
+.telegram-app .animate-fade-in > div:has(button[aria-label="Вернуться"]):first-child {
+  position: sticky;
+  top: max(env(safe-area-inset-top), var(--tg-content-safe-area-inset-top, 0px));
+  z-index: 60;
+  margin-left: -0.35rem;
+  margin-right: -0.35rem;
+  padding: 0.45rem 0.35rem;
+  background: color-mix(in srgb, #f8fafc 94%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
 button[aria-label="Секреты успешной сдачи"] {
   width: auto !important;
   padding-left: 10px !important;
@@ -129,65 +74,23 @@ button[aria-label="Секреты успешной сдачи"]::after {
 }
 
 @media (min-width: 480px) {
-  button[aria-label="Секреты успешной сдачи"]::after {
-    content: 'Секреты успешной сдачи';
-    font-size: 12px;
-  }
+  button[aria-label="Секреты успешной сдачи"]::after { content: 'Секреты успешной сдачи'; font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.5s ease-out;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
+  .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+  .animate-slide-up { animation: slideUp 0.5s ease-out; }
+  .animate-scale-in { animation: scaleIn 0.3s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-slate-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
-}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { @apply bg-slate-100; }
+::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
