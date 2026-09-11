@@ -8,24 +8,17 @@ import { ListeningModule } from '@/components/modules/ListeningModule';
 import { WritingModule } from '@/components/modules/WritingModule';
 import { SpeakingModule } from '@/components/modules/SpeakingModule';
 import { useProgress } from '@/hooks/useProgress';
-import { LesenHome } from '@/components/lesen/LesenHome';
 import type { ModuleId } from '@/types';
-import { Teil2Runner } from '@/components/lesen/Teil2Runner';
-import { lesenTeil2Tasks } from '@/data/lesen/teil2';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | null;
 
 export default function App() {
   const [view, setView] = useState<View>(null);
-  const [lesenScreen, setLesenScreen] = useState<
-  'home' | 'teil1' | 'teil2'
->('home');
   const { progress, recordScore, markCompleted } = useProgress();
 
   const handleBack = useCallback(() => {
-  setLesenScreen('home');
-  setView(null);
-}, []);
+    setView(null);
+  }, []);
 
   useEffect(() => {
     const telegram = window.Telegram?.WebApp;
@@ -73,27 +66,9 @@ export default function App() {
         {view === 'instructions' && <Instructions onBack={handleBack} />}
         {view === 'exam-guide' && <ExamGuide onBack={handleBack} />}
         {view === 'mock-exam' && <MockExam onBack={handleBack} />}
-        {view === 'lesen' && lesenScreen === 'home' && (
-  <LesenHome
-    onStartTeil1={() => setLesenScreen('teil1')}
-    onStartTeil2={() => setLesenScreen('teil2')}
-  />
-)}
-
-{view === 'lesen' && lesenScreen === 'teil1' && (
-  <ReadingModule
-    onBack={() => setLesenScreen('home')}
-    onComplete={handleComplete('lesen')}
-  />
-)}
-
-{view === 'lesen' && lesenScreen === 'teil2' && (
-  <Teil2Runner
-    tasks={lesenTeil2Tasks}
-    onBack={() => setLesenScreen('home')}
-    onComplete={handleComplete('lesen')}
-  />
-)}
+        {view === 'lesen' && (
+          <ReadingModule onBack={handleBack} onComplete={handleComplete('lesen')} />
+        )}
         {view === 'horen' && (
           <ListeningModule onBack={handleBack} onComplete={handleComplete('horen')} />
         )}
