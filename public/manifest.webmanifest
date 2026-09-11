@@ -1,12 +1,13 @@
 {
-  "name": "Тренажёр Отто — Goethe A1",
-  "short_name": "Отто A1",
+  "name": "Тренажёр Отто А1",
+  "short_name": "Отто А1",
   "description": "Тренажёр для подготовки к Goethe-Zertifikat A1",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0f766e",
+  "orientation": "portrait",
+  "background_color": "#0F7D74",
+  "theme_color": "#0F7D74",
   "lang": "ru",
   "icons": [
     {
