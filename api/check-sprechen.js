@@ -1,15 +1,25 @@
-const MAX_AUDIO_BYTES = 7 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 3 * 1024 * 1024;
 
 export default async function handler(req, res) {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      ok: true,
+      aiConfigured: Boolean(apiKey),
+      maxAudioBytes: MAX_AUDIO_BYTES,
+    });
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return res.status(503).json({
-      error: 'Проверка речи пока не подключена: на сервере отсутствует OPENAI_API_KEY.',
+      error: 'AI-проверка речи не подключена: на сервере отсутствует OPENAI_API_KEY.',
+      code: 'missing_api_key',
     });
   }
 
@@ -18,70 +28,116 @@ export default async function handler(req, res) {
     const { audioBase64, mimeType = 'audio/webm', mode } = body;
 
     if (!audioBase64 || typeof audioBase64 !== 'string') {
-      return res.status(400).json({ error: 'Аудиозапись не получена.' });
+      return res.status(400).json({ error: 'Аудиозапись не получена.', code: 'missing_audio' });
     }
 
     if (!['teil1', 'teil2', 'teil3', 'free'].includes(mode)) {
-      return res.status(400).json({ error: 'Неизвестный тип задания Sprechen.' });
+      return res.status(400).json({ error: 'Неизвестный тип задания Sprechen.', code: 'bad_mode' });
     }
 
     const audioBuffer = Buffer.from(audioBase64, 'base64');
     if (!audioBuffer.length) {
-      return res.status(400).json({ error: 'Аудиозапись пустая.' });
+      return res.status(400).json({ error: 'Аудиозапись пустая.', code: 'empty_audio' });
     }
     if (audioBuffer.length > MAX_AUDIO_BYTES) {
-      return res.status(413).json({ error: 'Запись слишком длинная. Запишите более короткий ответ.' });
+      return res.status(413).json({
+        error: 'Запись слишком длинная для отправки. Сделайте ответ короче и запишите ещё раз.',
+        code: 'audio_too_large',
+      });
     }
 
     const transcript = await transcribeAudio({ apiKey, audioBuffer, mimeType });
     if (!transcript.trim()) {
-      return res.status(422).json({ error: 'Не удалось распознать немецкую речь. Попробуйте записать ответ ещё раз.' });
+      return res.status(422).json({
+        error: 'Не удалось распознать немецкую речь. Говорите чуть громче и попробуйте записать ещё раз.',
+        code: 'empty_transcript',
+      });
     }
 
     const evaluation = await evaluateAnswer({ apiKey, transcript, body });
     return res.status(200).json({ ...evaluation, transcript });
   } catch (error) {
     console.error('check-sprechen error', error);
+
+    if (error instanceof OpenAIRequestError) {
+      if (error.status === 401 || error.status === 403) {
+        return res.status(502).json({
+          error: 'AI-проверка не авторизована. Нужно проверить OPENAI_API_KEY на сервере.',
+          code: 'openai_auth',
+        });
+      }
+      if (error.status === 429) {
+        return res.status(429).json({
+          error: 'Лимит OpenAI API временно исчерпан. Попробуйте ещё раз немного позже.',
+          code: 'openai_limit',
+        });
+      }
+      return res.status(502).json({
+        error: 'OpenAI сейчас не смог обработать запись. Попробуйте ещё раз через несколько секунд.',
+        code: 'openai_error',
+      });
+    }
+
     return res.status(500).json({
-      error: 'Не удалось проверить ответ. Запись можно прослушать и продолжить тренировку.',
+      error: 'Не удалось проверить ответ. Запись можно прослушать и попробовать отправить ещё раз.',
+      code: 'server_error',
     });
   }
 }
 
+class OpenAIRequestError extends Error {
+  constructor(status, detail) {
+    super(`OpenAI request failed: ${status} ${detail}`);
+    this.name = 'OpenAIRequestError';
+    this.status = status;
+  }
+}
+
+function normalizeMimeType(mimeType) {
+  const raw = typeof mimeType === 'string' ? mimeType.toLowerCase().split(';')[0].trim() : '';
+  if (!raw.startsWith('audio/')) return 'audio/webm';
+  return raw;
+}
+
+function extensionForMime(mimeType) {
+  const mime = normalizeMimeType(mimeType);
+  if (mime.includes('webm')) return 'webm';
+  if (mime.includes('ogg')) return 'ogg';
+  if (mime.includes('wav')) return 'wav';
+  if (mime.includes('mpeg') || mime.includes('mp3')) return 'mp3';
+  if (mime.includes('mp4') || mime.includes('m4a') || mime.includes('aac')) return 'm4a';
+  return 'webm';
+}
+
 async function transcribeAudio({ apiKey, audioBuffer, mimeType }) {
-  const form = new FormData();
-  const safeMime = typeof mimeType === 'string' && mimeType.startsWith('audio/') ? mimeType : 'audio/webm';
-  const extension = safeMime.includes('mp4') ? 'm4a' : safeMime.includes('wav') ? 'wav' : 'webm';
+  const safeMime = normalizeMimeType(mimeType);
+  const extension = extensionForMime(safeMime);
   const bytes = new Uint8Array(audioBuffer);
 
-  form.append('file', new Blob([bytes], { type: safeMime }), `sprechen.${extension}`);
-  form.append('model', 'gpt-4o-mini-transcribe');
-  form.append('language', 'de');
-  form.append('response_format', 'json');
+  const callTranscription = async (model) => {
+    const form = new FormData();
+    form.append('file', new Blob([bytes], { type: safeMime }), `sprechen.${extension}`);
+    form.append('model', model);
+    form.append('language', 'de');
+    form.append('response_format', 'json');
 
-  let response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}` },
-    body: form,
-  });
-
-  if (!response.ok) {
-    const fallbackForm = new FormData();
-    fallbackForm.append('file', new Blob([bytes], { type: safeMime }), `sprechen.${extension}`);
-    fallbackForm.append('model', 'whisper-1');
-    fallbackForm.append('language', 'de');
-    fallbackForm.append('response_format', 'json');
-
-    response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    return fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}` },
-      body: fallbackForm,
+      body: form,
     });
+  };
+
+  let response = await callTranscription('gpt-4o-mini-transcribe');
+  if (!response.ok) {
+    const firstDetail = await response.text();
+    console.warn('gpt-4o-mini-transcribe failed', response.status, firstDetail.slice(0, 300));
+    response = await callTranscription('whisper-1');
   }
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`Transcription failed: ${response.status} ${detail.slice(0, 300)}`);
+    throw new OpenAIRequestError(response.status, detail.slice(0, 500));
   }
 
   const payload = await response.json();
@@ -141,7 +197,7 @@ Freies Sprechen: проверь, раскрыл ли ученик три опо�
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`Evaluation failed: ${response.status} ${detail.slice(0, 300)}`);
+    throw new OpenAIRequestError(response.status, detail.slice(0, 500));
   }
 
   const payload = await response.json();
