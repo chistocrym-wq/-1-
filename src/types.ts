@@ -26,12 +26,12 @@ export interface MatchingQuestion extends BaseQuestion {
   type: 'matching';
   items: string[];
   matches: string[];
-  correctPairs: number[]; // index into matches for each item
+  correctPairs: number[];
 }
 
 export interface FillBlankQuestion extends BaseQuestion {
   type: 'fill-blank';
-  text: string; // text with ___ for blanks
+  text: string;
   answer: string;
   alternatives?: string[];
 }
@@ -75,7 +75,7 @@ export interface ListeningTask {
   id: string;
   title: string;
   instruction: string;
-  audioText: string; // text for TTS
+  audioText: string;
   questions: (MultipleChoiceQuestion | TrueFalseQuestion)[];
 }
 
@@ -85,7 +85,7 @@ export interface WritingTask {
   instruction: string;
   type: 'email' | 'message' | 'form';
   situation: string;
-  points: string[]; // bullet points to cover
+  points: string[];
   sampleAnswer: string;
   minWords: number;
   maxWords: number;
@@ -112,6 +112,7 @@ export interface ModuleProgress {
 export interface Progress {
   [key: string]: ModuleProgress;
 }
+
 export type LesenTeil2VisualType =
   | 'shop'
   | 'cinema'
@@ -144,5 +145,7 @@ export interface ReadingTeil2Task {
     a: LesenTeil2Option;
     b: LesenTeil2Option;
   };
-  correctAnswer: 'a' | 'b';
+  // Старый банк содержал ответы в верхнем регистре. Новый Lesen его не использует,
+  // но тип сохраняем совместимым, чтобы legacy-файлы не ломали typecheck.
+  correctAnswer: 'a' | 'b' | 'A' | 'B';
 }
