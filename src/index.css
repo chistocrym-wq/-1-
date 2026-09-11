@@ -45,6 +45,7 @@
   position: relative;
   isolation: isolate;
   min-height: var(--tg-viewport-stable-height, 100vh);
+  overflow-x: clip;
   padding-top: max(env(safe-area-inset-top), var(--tg-content-safe-area-inset-top, 0px));
   padding-right: max(env(safe-area-inset-right), var(--tg-content-safe-area-inset-right, 0px));
   padding-bottom: max(env(safe-area-inset-bottom), var(--tg-content-safe-area-inset-bottom, 0px));
@@ -126,8 +127,33 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
 }
 
+.otto-main-character-frame {
+  isolation: isolate;
+}
+
+.otto-main-character {
+  width: 390px;
+  height: 390px;
+  transform: translateX(-50%) translateY(-4px) scale(1.03);
+  object-position: 50% 0%;
+}
+
 .otto-inner-screen {
   position: relative;
+  padding-bottom: 78px;
+}
+
+.otto-inner-screen::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 36px;
+  right: -70px;
+  width: 210px;
+  height: 210px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(15,125,116,.09), transparent 70%);
+  pointer-events: none;
 }
 
 .otto-inner-screen > .animate-fade-in,
@@ -135,17 +161,24 @@
   border-radius: 30px;
 }
 
+.otto-inner-screen h1,
+.otto-inner-screen h2,
+.otto-inner-screen h3 {
+  color: var(--otto-ink);
+  letter-spacing: -.025em;
+}
+
 .otto-companion {
   position: fixed;
   z-index: 35;
-  right: max(8px, env(safe-area-inset-right));
-  bottom: max(14px, env(safe-area-inset-bottom));
-  width: 70px;
-  height: 70px;
-  border: 3px solid rgba(255,255,255,.96);
-  border-radius: 24px;
-  background: #fff;
-  box-shadow: 0 12px 34px rgba(15,23,42,.18);
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: 72px;
+  height: 72px;
+  border: 3px solid rgba(255,255,255,.98);
+  border-radius: 25px;
+  background: linear-gradient(180deg, #e9f7f4, #ffffff);
+  box-shadow: 0 14px 36px rgba(15,23,42,.18), 0 0 0 1px rgba(15,125,116,.08);
   overflow: hidden;
   pointer-events: none;
 }
@@ -158,19 +191,39 @@
 }
 
 .otto-companion img {
-  width: 126px;
-  height: 126px;
+  width: 132px;
+  height: 132px;
   max-width: none;
   object-fit: cover;
-  object-position: 50% 5%;
-  transform: translate(-29px, -5px);
+  object-position: 50% 0%;
+  transform: translate(-30px, -4px);
 }
 
-/* Главный акцентный цвет в интерфейсе — цвет заставки. */
+.otto-view-mock-exam .otto-companion {
+  width: 58px;
+  height: 58px;
+  opacity: .88;
+}
+
+.otto-view-mock-exam .otto-companion img {
+  width: 108px;
+  height: 108px;
+  transform: translate(-25px, -4px);
+}
+
+/* Главный акцентный цвет — точный цвет заставки. */
 .otto-skin [class~="bg-teal-600"],
 .otto-skin [class~="bg-teal-700"],
 .otto-skin [class~="bg-slate-900"] {
   background-color: var(--otto-teal) !important;
+}
+
+.otto-skin button[class~="bg-slate-900"],
+.otto-skin button[class~="bg-teal-600"],
+.otto-skin button[class~="bg-teal-700"] {
+  background-image: linear-gradient(135deg, var(--otto-teal), var(--otto-teal-dark));
+  border-color: transparent !important;
+  box-shadow: 0 9px 22px rgba(15,125,116,.20);
 }
 
 .otto-skin [class~="text-teal-700"],
@@ -190,24 +243,89 @@
   background-color: var(--otto-teal-soft) !important;
 }
 
-/* Белые карточки получают единый мягкий вид, но функциональные цвета ошибок/успеха не меняются. */
+/* Единый законченный вид карточек на всех внутренних экранах. */
 .otto-skin section[class*="bg-white"],
+.otto-skin div[class*="bg-white"][class*="rounded-xl"],
 .otto-skin div[class*="bg-white"][class*="rounded-2xl"],
 .otto-skin div[class*="bg-white"][class*="rounded-3xl"] {
-  border-color: rgba(255,255,255,.85);
-  box-shadow: 0 10px 28px rgba(15,23,42,.065);
+  border-color: rgba(255,255,255,.9);
+  box-shadow: 0 11px 30px rgba(23,32,51,.065), inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+.otto-inner-screen section[class*="border"],
+.otto-inner-screen div[class*="rounded-2xl"][class*="border"] {
+  border-color: rgba(148,163,184,.18);
+}
+
+.otto-inner-screen [class*="bg-slate-50"] {
+  background-color: rgba(247,250,249,.94) !important;
+}
+
+.otto-inner-screen [class*="bg-amber-50"]:not([class*="border-amber"]),
+.otto-inner-screen [class*="bg-sky-50"]:not([class*="border-sky"]),
+.otto-inner-screen [class*="bg-cyan-50"]:not([class*="border-cyan"]) {
+  background-color: rgba(244,250,249,.94) !important;
 }
 
 .otto-skin button[class*="rounded-xl"],
-.otto-skin button[class*="rounded-2xl"] {
+.otto-skin button[class*="rounded-2xl"],
+.otto-skin button[class*="rounded-3xl"] {
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background-color .16s ease;
+}
+
+.otto-inner-screen button[class*="bg-white"],
+.otto-inner-screen button[class*="bg-slate-100"] {
+  border-color: rgba(148,163,184,.18) !important;
+  box-shadow: 0 6px 18px rgba(23,32,51,.05);
 }
 
 .otto-skin button:not(:disabled):active {
   transform: scale(.985);
 }
 
-/* Первая шапка внутренней страницы остаётся доступной при прокрутке. */
+.otto-skin input,
+.otto-skin textarea,
+.otto-skin select {
+  border-radius: 18px;
+  border-color: rgba(148,163,184,.28);
+  background: rgba(255,255,255,.96);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 4px 14px rgba(23,32,51,.04);
+  outline: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.otto-skin input:focus,
+.otto-skin textarea:focus,
+.otto-skin select:focus {
+  border-color: rgba(15,125,116,.55) !important;
+  box-shadow: 0 0 0 4px rgba(15,125,116,.10), 0 5px 18px rgba(23,32,51,.05);
+}
+
+.otto-skin audio {
+  width: 100%;
+  border-radius: 18px;
+  background: #eef7f5;
+}
+
+.otto-inner-screen img {
+  max-width: 100%;
+}
+
+.otto-inner-screen table {
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 8px 24px rgba(23,32,51,.05);
+}
+
+.otto-inner-screen th {
+  background: var(--otto-teal-soft);
+  color: var(--otto-teal-dark);
+}
+
+/* Первая шапка внутренней страницы всегда остаётся доступной при прокрутке. */
 .telegram-app .animate-fade-in > div:has(button[aria-label="Назад"]):first-child,
 .telegram-app .animate-fade-in > div:has(button[aria-label="Вернуться"]):first-child,
 .telegram-app .animate-fade-in > div:first-child:has(> button) {
@@ -217,12 +335,18 @@
   margin-left: -0.35rem;
   margin-right: -0.35rem;
   padding: 0.55rem 0.55rem;
-  border: 1px solid rgba(255,255,255,.88);
-  border-radius: 20px;
-  background: rgba(250,253,252,.92);
-  box-shadow: 0 8px 24px rgba(15,23,42,.075);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 22px;
+  background: rgba(250,253,252,.94);
+  box-shadow: 0 8px 25px rgba(15,23,42,.075);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+}
+
+.telegram-app .animate-fade-in > div:has(button[aria-label="Назад"]):first-child button,
+.telegram-app .animate-fade-in > div:has(button[aria-label="Вернуться"]):first-child button {
+  border-color: rgba(15,125,116,.12);
+  box-shadow: 0 4px 12px rgba(15,125,116,.07);
 }
 
 button[aria-label="Секреты успешной сдачи"] {
@@ -242,9 +366,17 @@ button[aria-label="Секреты успешной сдачи"]::after {
 
 @media (min-width: 480px) {
   button[aria-label="Секреты успешной сдачи"]::after { content: 'Секреты успешной сдачи'; font-size: 12px; }
+  .otto-main-character { width: 440px; height: 440px; }
 }
 
 @media (max-width: 640px) {
+  .otto-inner-screen { padding-bottom: 70px; }
+  .otto-inner-screen > .animate-fade-in { border-radius: 24px; }
+  .otto-inner-screen section[class*="rounded-3xl"],
+  .otto-inner-screen div[class*="rounded-3xl"] { border-radius: 24px; }
+  .otto-inner-screen section[class*="rounded-2xl"],
+  .otto-inner-screen div[class*="rounded-2xl"] { border-radius: 20px; }
+
   .otto-companion {
     width: 58px;
     height: 58px;
@@ -256,8 +388,26 @@ button[aria-label="Секреты успешной сдачи"]::after {
   .otto-companion img {
     width: 108px;
     height: 108px;
-    transform: translate(-25px, -5px);
+    transform: translate(-25px, -4px);
   }
+
+  .otto-main-character {
+    width: 390px;
+    height: 390px;
+    transform: translateX(-50%) translateY(-5px) scale(1.03);
+  }
+}
+
+@media (max-width: 380px) {
+  .otto-main-character { width: 350px; height: 350px; }
+  .otto-companion { width: 52px; height: 52px; }
+  .otto-companion img { width: 98px; height: 98px; transform: translate(-23px, -4px); }
+}
+
+@media print {
+  .otto-backdrop,
+  .otto-companion { display: none !important; }
+  .telegram-app { background: #fff !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
