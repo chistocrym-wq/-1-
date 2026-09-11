@@ -1,6 +1,7 @@
 import { BarChart3, BookOpenCheck, CheckCircle2, Target } from 'lucide-react';
 import type { Progress } from '@/types';
 import { ProgressBar } from '@/components/ProgressBar';
+import { OTTO_CHARACTER_SRC } from '../ottoCharacter';
 
 interface Props { progress: Progress }
 
@@ -16,7 +17,7 @@ export function AccountPage({ progress }: Props) {
     <div className="animate-fade-in pb-28">
       <section className="otto-page-hero otto-account-hero">
         <div><p className="otto-kicker">Личный кабинет</p><h1>Ваш прогресс в подготовке A1</h1></div>
-        <div className="otto-page-hero-character" aria-hidden="true"><img src="/otto.png" alt="" /></div>
+        <div className="otto-page-hero-character" aria-hidden="true"><img src={OTTO_CHARACTER_SRC} alt="" /></div>
       </section>
 
       <section className="otto-account-card">
