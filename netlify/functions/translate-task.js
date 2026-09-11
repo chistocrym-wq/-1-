@@ -6,8 +6,9 @@ export default async (req) => {
     return json({ error: 'Method not allowed' }, 405, { Allow: 'POST' });
   }
 
-  const apiKey = Netlify.env.get('OPENAI_API_KEY');
-  if (!apiKey) return json({ error: 'Русский перевод сейчас недоступен.' }, 503);
+  const apiKey = process.env.OPENAI_API_KEY;
+  const baseUrl = process.env.OPENAI_BASE_URL;
+  if (!apiKey || !baseUrl) return json({ error: 'Русский перевод сейчас недоступен.' }, 503);
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -18,7 +19,7 @@ export default async (req) => {
     if (!parts.length) return json({ error: 'Нет текста для перевода.' }, 400);
     if (parts.join('\n').length > MAX_TOTAL) return json({ error: 'Слишком большой текст для перевода.' }, 413);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${baseUrl}/v1/chat/completions`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -27,7 +28,7 @@ export default async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Переведи каждый элемент массива с немецкого на простой естественный русский. Это учебный Goethe A1. Переводи строго смысл, имена, даты, время и числа сохраняй. Если элемент уже написан по-русски, верни его без изменений. Не решай задание, не подсказывай правильный ответ и не добавляй объяснений. Верни ровно столько переводов, сколько входных элементов.',
+            content: 'Переведи каждый элемент массива с немецкого на простой естественный русский для уровня A1. Переводи строго смысл, имена, даты, время и числа сохраняй. Если элемент уже написан по-русски, верни его без изменений. Не решай задание, не подсказывай правильный ответ и не добавляй объяснений. Верни ровно столько переводов, сколько входных элементов.',
           },
           { role: 'user', content: JSON.stringify(parts) },
         ],
