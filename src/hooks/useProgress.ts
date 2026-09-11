@@ -23,10 +23,14 @@ export function useProgress() {
     if (!Number.isFinite(score) || !Number.isFinite(total) || total <= 0) return;
     setProgress((prev) => {
       const existing = prev[key];
-      const safeScore = Math.max(0, Math.min(total, score));
-      const answered = (existing?.answered ?? 0) + total;
-      const correct = (existing?.correct ?? 0) + safeScore;
-      const scorePercent = Math.round((safeScore / total) * 100);
+      // AI-модули иногда возвращают процент как score/100. Для прогресса это одна выполненная задача,
+      // а не 100 заданий. Обычные тесты по-прежнему считаются по числу вопросов.
+      const percentageResult = total === 100;
+      const unitTotal = percentageResult ? 1 : total;
+      const unitScore = percentageResult ? Math.max(0, Math.min(100, score)) / 100 : Math.max(0, Math.min(total, score));
+      const answered = (existing?.answered ?? 0) + unitTotal;
+      const correct = (existing?.correct ?? 0) + unitScore;
+      const scorePercent = Math.round((unitScore / unitTotal) * 100);
       return {
         ...prev,
         [key]: {
@@ -42,14 +46,8 @@ export function useProgress() {
     });
   }, []);
 
-  const markCompleted = useCallback((key: string, total: number) => {
-    recordScore(key, total, total);
-  }, [recordScore]);
-
-  const resetProgress = useCallback(() => {
-    setProgress({});
-    localStorage.removeItem(STORAGE_KEY);
-  }, []);
+  const markCompleted = useCallback((key: string, total: number) => recordScore(key, total, total), [recordScore]);
+  const resetProgress = useCallback(() => { setProgress({}); localStorage.removeItem(STORAGE_KEY); }, []);
 
   return { progress, recordScore, markCompleted, resetProgress };
 }
