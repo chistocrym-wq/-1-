@@ -1,6 +1,7 @@
 import { BookOpen, Headphones, Mic, PenTool } from 'lucide-react';
 import type { ModuleId, Progress } from '@/types';
 import { ProgressBar } from '@/components/ProgressBar';
+import { OTTO_CHARACTER_SRC } from '../ottoCharacter';
 
 interface Props {
   progress: Progress;
@@ -23,7 +24,7 @@ export function ModulesHub({ progress, onSelectModule }: Props) {
           <h1>Выберите раздел и продолжайте подготовку</h1>
         </div>
         <div className="otto-page-hero-character" aria-hidden="true">
-          <img src="/otto.png" alt="" />
+          <img src={OTTO_CHARACTER_SRC} alt="" />
         </div>
       </section>
 
