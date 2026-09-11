@@ -3,6 +3,7 @@ import { Dashboard } from '@/components/Dashboard';
 import { Instructions } from '@/components/Instructions';
 import { ExamGuide } from '@/components/ExamGuide';
 import { MockExam } from '@/components/MockExam';
+import { PageTranslationEye } from '@/components/common/PageTranslationEye';
 import { ReadingModule } from '@/components/modules/ReadingModule';
 import { ListeningModule } from '@/components/modules/ListeningModule';
 import { WritingModule } from '@/components/modules/WritingModule';
@@ -52,33 +53,40 @@ export default function App() {
     }
   };
 
+  const hasGlobalTranslationEye =
+    view === 'lesen' || view === 'horen' || view === 'sprechen' || view === 'mock-exam';
+
   return (
     <div className="telegram-app min-h-screen bg-slate-50">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-        {view === null && (
-          <Dashboard
-            onSelectModule={(mod) => setView(mod)}
-            onOpenInstructions={() => setView('instructions')}
-            onOpenExamGuide={() => setView('exam-guide')}
-            onOpenMockExam={() => setView('mock-exam')}
-            progress={progress}
-          />
-        )}
-        {view === 'instructions' && <Instructions onBack={handleBack} />}
-        {view === 'exam-guide' && <ExamGuide onBack={handleBack} />}
-        {view === 'mock-exam' && <MockExam onBack={handleBack} />}
-        {view === 'lesen' && (
-          <ReadingModule onBack={handleBack} onComplete={handleComplete('lesen')} />
-        )}
-        {view === 'horen' && (
-          <ListeningModule onBack={handleBack} onComplete={handleComplete('horen')} />
-        )}
-        {view === 'schreiben' && (
-          <WritingModule onBack={handleBack} onComplete={handleComplete('schreiben')} />
-        )}
-        {view === 'sprechen' && (
-          <SpeakingModule onBack={handleBack} onComplete={handleComplete('sprechen')} />
-        )}
+        {hasGlobalTranslationEye && <PageTranslationEye scopeId="otto-current-task" />}
+
+        <div id={hasGlobalTranslationEye ? 'otto-current-task' : undefined}>
+          {view === null && (
+            <Dashboard
+              onSelectModule={(mod) => setView(mod)}
+              onOpenInstructions={() => setView('instructions')}
+              onOpenExamGuide={() => setView('exam-guide')}
+              onOpenMockExam={() => setView('mock-exam')}
+              progress={progress}
+            />
+          )}
+          {view === 'instructions' && <Instructions onBack={handleBack} />}
+          {view === 'exam-guide' && <ExamGuide onBack={handleBack} />}
+          {view === 'mock-exam' && <MockExam onBack={handleBack} />}
+          {view === 'lesen' && (
+            <ReadingModule onBack={handleBack} onComplete={handleComplete('lesen')} />
+          )}
+          {view === 'horen' && (
+            <ListeningModule onBack={handleBack} onComplete={handleComplete('horen')} />
+          )}
+          {view === 'schreiben' && (
+            <WritingModule onBack={handleBack} onComplete={handleComplete('schreiben')} />
+          )}
+          {view === 'sprechen' && (
+            <SpeakingModule onBack={handleBack} onComplete={handleComplete('sprechen')} />
+          )}
+        </div>
       </div>
     </div>
   );
