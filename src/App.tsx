@@ -54,7 +54,7 @@ export default function App() {
   };
 
   const hasGlobalTranslationEye =
-    view === 'lesen' || view === 'horen' || view === 'sprechen' || view === 'mock-exam';
+    view === 'lesen' || view === 'horen' || view === 'mock-exam';
 
   return (
     <div className="telegram-app min-h-screen bg-slate-50">
