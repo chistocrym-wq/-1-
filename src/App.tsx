@@ -37,7 +37,7 @@ export default function App() {
     if (view === null) { b.hide(); return; }
     b.show();
     b.onClick(back);
-    return () => b.offClick(back);
+    return () => { b.offClick(back); };
   }, [back, view]);
 
   const complete = (m: ModuleId) => (score: number, total: number) => recordScore(m, score, total);
