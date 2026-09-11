@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { CheckCircle2, Mic, RefreshCw, Sparkles, Square, Upload, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -15,14 +15,15 @@ const MAX_CLIENT_AUDIO_BYTES=2.8*1024*1024;
 let sharedMicStream:MediaStream|null=null;
 let sharedMicPromise:Promise<MediaStream>|null=null;
 
-async function getSharedMicStream(){
+async function getSharedMicStream():Promise<MediaStream>{
   const live=sharedMicStream?.getAudioTracks().find(t=>t.readyState==='live');
   if(live){sharedMicStream!.getAudioTracks().forEach(t=>{t.enabled=true});return sharedMicStream!}
   if(sharedMicPromise)return sharedMicPromise;
-  sharedMicPromise=navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}})
+  const promise=navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}})
     .then(stream=>{sharedMicStream=stream;return stream})
     .finally(()=>{sharedMicPromise=null});
-  return sharedMicPromise;
+  sharedMicPromise=promise;
+  return promise;
 }
 function muteSharedMic(){sharedMicStream?.getAudioTracks().forEach(t=>{t.enabled=false})}
 function releaseSharedMic(){sharedMicStream?.getTracks().forEach(t=>t.stop());sharedMicStream=null;sharedMicPromise=null}
@@ -86,7 +87,7 @@ export function VoiceRecorder({evaluation,onPracticed,onEvaluated,hint}:VoiceRec
   },[acceptBlob,clearTimer,reset]);
 
   const stop=useCallback(()=>{if(recorderRef.current?.state==='recording')recorderRef.current.stop()},[]);
-  const handleFile=useCallback((e:React.ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(f)acceptBlob(new Blob([f],{type:f.type||guessAudioMime(f.name)}));e.target.value=''},[acceptBlob]);
+  const handleFile=useCallback((e:ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(f)acceptBlob(new Blob([f],{type:f.type||guessAudioMime(f.name)}));e.target.value=''},[acceptBlob]);
 
   const check=useCallback(async()=>{
     if(!audioBlob||checking)return;
