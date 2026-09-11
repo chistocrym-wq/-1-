@@ -1,17 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Lightbulb,
-  Mic,
-  RefreshCw,
-  Sparkles,
-  Square,
-  Volume2,
-} from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Lightbulb, RefreshCw } from 'lucide-react';
 import {
   speakingTeil1,
   speakingTeil2Cards,
@@ -20,6 +8,7 @@ import {
 } from '@/data/speaking';
 import { freeSpeakingTopics } from '@/data/speakingFree';
 import { SpeakingCardIllustration } from '@/components/sprechen/SpeakingCardIllustration';
+import { VoiceRecorder } from '@/components/sprechen/VoiceRecorder';
 import { cn } from '@/lib/utils';
 
 interface SpeakingModuleProps {
@@ -119,33 +108,25 @@ export function SpeakingModule({ onBack, onComplete }: SpeakingModuleProps) {
           tipOpen={showExaminerTip}
         />
 
-        <InstructionBox
-          german={speakingTeil1.instruction}
-          russian={speakingTeil1.instructionRu}
-          showTranslation={showHeaderTranslation}
-        />
-
-        {showExaminerTip && (
-          <ExaminerTipBox items={speakingTeil1.followUps} />
-        )}
+        <InstructionBox german={speakingTeil1.instruction} russian={speakingTeil1.instructionRu} showTranslation={showHeaderTranslation} />
+        {showExaminerTip && <ExaminerTipBox items={speakingTeil1.followUps} />}
 
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
           <div className="divide-y divide-slate-200 px-4 py-2 sm:px-6">
             {speakingTeil1.keywords.map((keyword) => (
-              <div key={keyword} className="flex min-h-[64px] items-center justify-center gap-3 py-3 text-center">
-                <span className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{keyword}</span>
-                <InlineTranslationEye translation={KEYWORD_TRANSLATIONS[keyword] ?? keyword} />
+              <div key={keyword} className="flex min-h-[64px] items-center justify-center py-3 text-center">
+                <HoverTranslation
+                  text={keyword}
+                  translation={KEYWORD_TRANSLATIONS[keyword] ?? keyword}
+                  className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+                />
               </div>
             ))}
           </div>
         </div>
 
         <VoiceRecorder key="teil1" evaluation={{ mode: 'teil1', expectedPoints: speakingTeil1.checkPoints }} onPracticed={() => setPracticed(true)} />
-
-        <SampleBox show={showSample} onToggle={() => setShowSample((value) => !value)} title="Пример короткого ответа">
-          <p>{speakingTeil1.sampleAnswer}</p>
-        </SampleBox>
-
+        <SampleBox show={showSample} onToggle={() => setShowSample((value) => !value)} title="Пример короткого ответа"><p>{speakingTeil1.sampleAnswer}</p></SampleBox>
         <BottomActions disabled={!practiced} onNext={() => { onComplete(1, 1); backToHome(); }} nextLabel="Завершить T1" />
       </div>
     );
@@ -170,24 +151,25 @@ export function SpeakingModule({ onBack, onComplete }: SpeakingModuleProps) {
 
         <div className="mx-auto mb-5 max-w-xl overflow-hidden rounded-2xl border border-slate-400 bg-white shadow-sm">
           <ExamCardHeader label="T2" />
-          <div className="border-b border-slate-300 bg-slate-100 px-5 py-2 text-center text-sm font-semibold text-slate-700">Thema: {card.theme}</div>
+          <div className="border-b border-slate-300 bg-slate-100 px-5 py-2 text-center text-sm font-semibold text-slate-700">
+            Thema:{' '}<HoverTranslation text={card.theme} translation={card.themeRu} className="font-semibold text-slate-800" />
+          </div>
           <div className="flex min-h-[190px] items-center justify-center px-6 py-10 text-center">
-            <div className="text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">{card.keyword}</div>
+            <HoverTranslation text={card.keyword} translation={card.keywordRu} className="text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl" />
           </div>
         </div>
 
         <VoiceRecorder key={card.id} evaluation={{ mode: 'teil2', theme: card.theme, keyword: card.keyword, sampleQuestion: card.sampleQuestion }} onPracticed={() => setPracticed(true)} />
-
         <SampleBox show={showSample} onToggle={() => setShowSample((value) => !value)} title="Один из возможных вариантов">
           <p className="font-medium text-slate-900">Frage: {card.sampleQuestion}</p>
           <p className="mt-2 text-slate-600">Antwort: {card.sampleAnswer}</p>
         </SampleBox>
-
         <BottomActions
           disabled={!practiced}
           onNext={() => { setTeil2Index((value) => (value + 1) % speakingTeil2Cards.length); resetViewState(); }}
           onShuffle={() => { setTeil2Index((value) => nextRandomIndex(value, speakingTeil2Cards.length)); resetViewState(); }}
           nextLabel="Следующая карточка"
+          shuffleLabel="Случайная карточка"
         />
       </div>
     );
@@ -216,17 +198,16 @@ export function SpeakingModule({ onBack, onComplete }: SpeakingModuleProps) {
         </div>
 
         <VoiceRecorder key={card.id} evaluation={{ mode: 'teil3', object: card.alt, sampleRequest: card.sampleRequest }} onPracticed={() => setPracticed(true)} />
-
         <SampleBox show={showSample} onToggle={() => setShowSample((value) => !value)} title="Пример просьбы и реакции">
           <p className="font-medium text-slate-900">Bitte: {card.sampleRequest}</p>
           <p className="mt-2 text-slate-600">Reaktion: {card.sampleReaction}</p>
         </SampleBox>
-
         <BottomActions
           disabled={!practiced}
           onNext={() => { setTeil3Index((value) => (value + 1) % speakingTeil3Cards.length); resetViewState(); }}
           onShuffle={() => { setTeil3Index((value) => nextRandomIndex(value, speakingTeil3Cards.length)); resetViewState(); }}
           nextLabel="Следующая карточка"
+          shuffleLabel="Случайная карточка"
         />
       </div>
     );
@@ -249,7 +230,7 @@ export function SpeakingModule({ onBack, onComplete }: SpeakingModuleProps) {
       />
 
       <div className="mb-5 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between bg-amber-100 px-5 py-3">
+        <div className="flex items-center justify-between gap-3 bg-amber-100 px-5 py-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-800">Freies Sprechen</p>
             <h3 className="mt-1 text-xl font-black text-slate-950">{topic.title}</h3>
@@ -260,38 +241,25 @@ export function SpeakingModule({ onBack, onComplete }: SpeakingModuleProps) {
           <div className="space-y-3">
             {topic.questions.map((question, index) => (
               <div key={question} className="flex gap-3 rounded-xl bg-slate-50 p-3 text-[16px] leading-6 text-slate-800">
-                <span className="font-black text-amber-700">{index + 1}.</span>
-                <span>{question}</span>
+                <span className="font-black text-amber-700">{index + 1}.</span><span>{question}</span>
               </div>
             ))}
           </div>
           <button type="button" onClick={() => setShowGuide((value) => !value)} className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-900">
-            <Lightbulb className="h-4 w-4" />
-            {showGuide ? 'Скрыть конструктор рассказа' : 'Открыть конструктор рассказа'}
+            <Lightbulb className="h-4 w-4" />{showGuide ? 'Скрыть конструктор рассказа' : 'Открыть конструктор рассказа'}
           </button>
           {showGuide && (
             <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
               <p className="mb-3 text-sm font-semibold text-slate-900">Начните фразы и подставьте свои данные:</p>
-              <div className="space-y-2">
-                {topic.guide.map((line) => <p key={line} className="border-b border-dashed border-slate-200 pb-2 text-[16px] leading-7 text-slate-700">{line}</p>)}
-              </div>
+              <div className="space-y-2">{topic.guide.map((line) => <p key={line} className="border-b border-dashed border-slate-200 pb-2 text-[16px] leading-7 text-slate-700">{line}</p>)}</div>
               <p className="mt-3 text-xs leading-5 text-slate-500">Не обязательно использовать все фразы. Главное — связно раскрыть три вопроса темы.</p>
             </div>
           )}
         </div>
       </div>
 
-      <VoiceRecorder
-        key={topic.id}
-        evaluation={{ mode: 'free', title: topic.title, expectedPoints: topic.questions }}
-        onPracticed={() => setPracticed(true)}
-        hint="Говорите примерно 45–120 секунд. Можно сначала открыть конструктор, затем закрыть его и рассказать своими словами."
-      />
-
-      <SampleBox show={showSample} onToggle={() => setShowSample((value) => !value)} title="Пример связного рассказа A1">
-        <p>{topic.sample}</p>
-      </SampleBox>
-
+      <VoiceRecorder key={topic.id} evaluation={{ mode: 'free', title: topic.title, expectedPoints: topic.questions }} onPracticed={() => setPracticed(true)} hint="Говорите примерно 45–120 секунд. Можно сначала открыть конструктор, затем закрыть его и рассказать своими словами." />
+      <SampleBox show={showSample} onToggle={() => setShowSample((value) => !value)} title="Пример связного рассказа A1"><p>{topic.sample}</p></SampleBox>
       <BottomActions
         disabled={!practiced}
         onNext={() => { setFreeIndex((value) => (value + 1) % freeSpeakingTopics.length); resetViewState(); }}
@@ -322,41 +290,17 @@ function Header({
   return (
     <div className="mb-5">
       <div className="relative flex min-h-[68px] items-start justify-center">
-        <button type="button" onClick={onBack} aria-label="Назад" className="absolute left-0 top-0 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white transition hover:bg-slate-50">
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
-        </button>
-
+        <button type="button" onClick={onBack} aria-label="Назад" className="absolute left-0 top-0 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white transition hover:bg-slate-50"><ArrowLeft className="h-5 w-5 text-slate-600" /></button>
         <div className="max-w-[68%] text-center sm:max-w-[74%]">
           <h2 className="text-2xl font-bold text-slate-950">Sprechen</h2>
           <p className="mt-1 text-sm font-medium text-slate-500">{subtitle}</p>
           {translationOpen && <p className="mt-2 text-sm font-semibold text-amber-800">{translation}</p>}
         </div>
-
         <div className="absolute right-0 top-0 flex items-center gap-2">
           {onTip && (
-            <button
-              type="button"
-              onClick={onTip}
-              aria-label="Подсказка экзаменатора"
-              title="Что может попросить экзаменатор"
-              className={cn(
-                'flex h-11 w-11 items-center justify-center rounded-xl border transition',
-                tipOpen ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-slate-200 bg-white text-slate-700'
-              )}
-            >
-              <Lightbulb className="h-5 w-5" />
-            </button>
+            <button type="button" onClick={onTip} aria-label="Подсказка экзаменатора" title="Что может попросить экзаменатор" className={cn('flex h-11 w-11 items-center justify-center rounded-xl border transition', tipOpen ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-slate-200 bg-white text-slate-700')}><Lightbulb className="h-5 w-5" /></button>
           )}
-          <button
-            type="button"
-            onClick={onToggleTranslation}
-            aria-label={translationOpen ? 'Скрыть перевод' : 'Перевод'}
-            title={translationOpen ? 'Скрыть перевод' : 'Перевод'}
-            className={cn(
-              'flex h-11 w-11 items-center justify-center rounded-xl border transition',
-              translationOpen ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-slate-200 bg-white text-slate-700'
-            )}
-          >
+          <button type="button" onClick={onToggleTranslation} aria-label={translationOpen ? 'Скрыть перевод' : 'Перевод'} title={translationOpen ? 'Скрыть перевод' : 'Перевод'} className={cn('flex h-11 w-11 items-center justify-center rounded-xl border transition', translationOpen ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-slate-200 bg-white text-slate-700')}>
             {translationOpen ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
@@ -391,17 +335,11 @@ function InstructionBox({ german, russian, showTranslation }: { german: string; 
 function ExaminerTipBox({ items }: { items: string[] }) {
   return (
     <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm sm:p-5">
-      <div className="mb-3 flex items-center justify-center gap-2 text-center">
-        <Lightbulb className="h-4 w-4 text-amber-700" />
-        <h3 className="text-sm font-bold text-amber-900">После представления экзаменатор может попросить</h3>
-      </div>
+      <div className="mb-3 flex items-center justify-center gap-2 text-center"><Lightbulb className="h-4 w-4 text-amber-700" /><h3 className="text-sm font-bold text-amber-900">После представления экзаменатор может попросить</h3></div>
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item} className="rounded-xl border border-amber-100 bg-white p-3">
-            <div className="flex items-start justify-between gap-3">
-              <p className="flex-1 text-[15px] font-medium leading-6 text-slate-800">{item}</p>
-              <InlineTranslationEye translation={FOLLOW_UP_TRANSLATIONS[item] ?? item} />
-            </div>
+          <div key={item} className="rounded-xl border border-amber-100 bg-white p-3 text-center">
+            <HoverTranslation text={item} translation={FOLLOW_UP_TRANSLATIONS[item] ?? item} className="text-[15px] font-medium leading-6 text-slate-800" />
           </div>
         ))}
       </div>
@@ -409,24 +347,23 @@ function ExaminerTipBox({ items }: { items: string[] }) {
   );
 }
 
-function InlineTranslationEye({ translation }: { translation: string }) {
+function HoverTranslation({ text, translation, className }: { text: string; translation: string; className?: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="shrink-0 text-left">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-label={open ? 'Скрыть перевод' : 'Перевод'}
-        title={open ? 'Скрыть перевод' : 'Перевод'}
-        className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-lg border transition',
-          open ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-slate-200 bg-white text-slate-600'
-        )}
-      >
-        {open ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-      </button>
-      {open && <div className="mt-2 max-w-[210px] rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-900">{translation}</div>}
-    </div>
+    <span
+      className="relative inline-flex cursor-help select-none items-center justify-center"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+      onClick={(event) => { event.stopPropagation(); setOpen((value) => !value); }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${text}. Перевод: ${translation}`}
+    >
+      <span className={className}>{text}</span>
+      {open && <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 w-max max-w-[230px] -translate-x-1/2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs font-semibold leading-5 text-amber-950 shadow-lg">{translation}</span>}
+    </span>
   );
 }
 
@@ -443,375 +380,13 @@ function SampleBox({ show, onToggle, title, children }: { show: boolean; onToggl
   );
 }
 
-function BottomActions({ disabled, onNext, onShuffle, nextLabel }: { disabled: boolean; onNext: () => void; onShuffle?: () => void; nextLabel: string }) {
+function BottomActions({ disabled, onNext, onShuffle, nextLabel, shuffleLabel = 'Случайная тема' }: { disabled: boolean; onNext: () => void; onShuffle?: () => void; nextLabel: string; shuffleLabel?: string }) {
   return (
     <div className="flex flex-col-reverse gap-3 pb-8 sm:flex-row sm:justify-end">
-      {onShuffle && <button type="button" onClick={onShuffle} className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw className="h-4 w-4" />Случайная тема</button>}
+      {onShuffle && <button type="button" onClick={onShuffle} className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw className="h-4 w-4" />{shuffleLabel}</button>}
       <button type="button" onClick={onNext} disabled={disabled} className={cn('inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold transition', disabled ? 'cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-slate-900 text-white hover:bg-slate-800')}>{nextLabel}<ArrowRight className="h-4 w-4" /></button>
     </div>
   );
-}
-
-type EvaluationPayload =
-  | { mode: 'teil1'; expectedPoints: string[] }
-  | { mode: 'teil2'; theme: string; keyword: string; sampleQuestion: string }
-  | { mode: 'teil3'; object: string; sampleRequest: string }
-  | { mode: 'free'; title: string; expectedPoints: string[] };
-
-interface EvaluationResult {
-  score: number;
-  transcript: string;
-  feedbackRu: string;
-  feedbackDe?: string;
-  missing?: string[];
-}
-
-const MAX_CLIENT_AUDIO_BYTES = 2.8 * 1024 * 1024;
-
-function VoiceRecorder({ evaluation, onPracticed, hint }: { evaluation: EvaluationPayload; onPracticed: () => void; hint?: string }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
-  const [result, setResult] = useState<EvaluationResult | null>(null);
-  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const clearTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
-
-  const stopTracks = useCallback(() => {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    fetch('/api/check-sprechen', { method: 'GET' })
-      .then((response) => response.json())
-      .then((payload) => { if (active) setAiAvailable(Boolean(payload?.aiConfigured)); })
-      .catch(() => { if (active) setAiAvailable(null); });
-
-    return () => {
-      active = false;
-      clearTimer();
-      stopTracks();
-      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-    };
-  }, [clearTimer, stopTracks]);
-
-  const resetRecording = useCallback(() => {
-    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-    audioUrlRef.current = null;
-    setAudioUrl(null);
-    setAudioBlob(null);
-    setElapsed(0);
-    setResult(null);
-    setError(null);
-  }, []);
-
-  const acceptAudioBlob = useCallback((blob: Blob) => {
-    clearTimer();
-    stopTracks();
-    setIsRecording(false);
-    mediaRecorderRef.current = null;
-
-    if (!blob.size) {
-      setError('Запись получилась пустой. Проверьте доступ к микрофону и попробуйте ещё раз.');
-      return;
-    }
-    if (blob.size > MAX_CLIENT_AUDIO_BYTES) {
-      setError('Запись слишком большая для AI-проверки. Запишите более короткий ответ — до 2 минут.');
-      return;
-    }
-
-    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-    const url = URL.createObjectURL(blob);
-    audioUrlRef.current = url;
-    setAudioBlob(blob);
-    setAudioUrl(url);
-    setResult(null);
-    setError(null);
-    onPracticed();
-  }, [clearTimer, onPracticed, stopTracks]);
-
-  const startRecording = useCallback(async () => {
-    resetRecording();
-
-    try {
-      if (!window.isSecureContext) {
-        throw new Error('Микрофон работает только на защищённой HTTPS-странице. Откройте 1-8aho.vercel.app напрямую.');
-      }
-      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-        throw new Error('Этот встроенный браузер не поддерживает прямую запись. Нажмите «Записать другим способом» ниже.');
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-
-      if (!stream.getAudioTracks().length) {
-        stream.getTracks().forEach((track) => track.stop());
-        throw new Error('Браузер не передал аудиодорожку. Проверьте разрешение на микрофон.');
-      }
-
-      streamRef.current = stream;
-      chunksRef.current = [];
-
-      const preferredTypes = [
-        'audio/webm;codecs=opus',
-        'audio/webm',
-        'audio/mp4',
-        'audio/ogg;codecs=opus',
-        'audio/ogg',
-      ];
-      const mimeType = preferredTypes.find((type) => MediaRecorder.isTypeSupported(type));
-      const options: MediaRecorderOptions = { audioBitsPerSecond: 48000 };
-      if (mimeType) options.mimeType = mimeType;
-
-      let recorder: MediaRecorder;
-      try {
-        recorder = new MediaRecorder(stream, options);
-      } catch {
-        recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-      }
-
-      mediaRecorderRef.current = recorder;
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
-      };
-      recorder.onerror = () => {
-        clearTimer();
-        stopTracks();
-        setIsRecording(false);
-        setError('Браузер остановил запись микрофона. Попробуйте ещё раз или используйте запасной способ записи.');
-      };
-      recorder.onstart = () => {
-        setElapsed(0);
-        setIsRecording(true);
-        setError(null);
-        timerRef.current = setInterval(() => setElapsed((value) => value + 1), 1000);
-      };
-      recorder.onstop = () => {
-        const type = recorder.mimeType || mimeType || 'audio/webm';
-        const blob = new Blob(chunksRef.current, { type });
-        acceptAudioBlob(blob);
-      };
-
-      recorder.start(250);
-    } catch (recordingError) {
-      clearTimer();
-      stopTracks();
-      setIsRecording(false);
-      setError(microphoneErrorMessage(recordingError));
-    }
-  }, [acceptAudioBlob, clearTimer, resetRecording, stopTracks]);
-
-  const stopRecording = useCallback(() => {
-    const recorder = mediaRecorderRef.current;
-    if (recorder?.state === 'recording') {
-      recorder.stop();
-    }
-  }, []);
-
-  const handleAudioFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const mimeType = file.type || guessAudioMime(file.name);
-      acceptAudioBlob(new Blob([file], { type: mimeType }));
-    }
-    event.target.value = '';
-  }, [acceptAudioBlob]);
-
-  const checkWithOtto = useCallback(async () => {
-    if (!audioBlob || checking) return;
-    if (audioBlob.size > MAX_CLIENT_AUDIO_BYTES) {
-      setError('Запись слишком большая. Запишите ответ короче.');
-      return;
-    }
-
-    setChecking(true);
-    setError(null);
-    setResult(null);
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 65000);
-
-    try {
-      const audioBase64 = await blobToBase64(audioBlob);
-      const response = await fetch('/api/check-sprechen', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({ ...evaluation, audioBase64, mimeType: audioBlob.type || 'audio/webm' }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(payload?.error || `Проверка Otto недоступна (${response.status}). Попробуйте ещё раз.`);
-      }
-      setResult(payload as EvaluationResult);
-      setAiAvailable(true);
-    } catch (checkingError) {
-      if (checkingError instanceof DOMException && checkingError.name === 'AbortError') {
-        setError('Проверка заняла слишком много времени. Запись сохранена — нажмите «Проверить с Otto» ещё раз.');
-      } else {
-        setError(checkingError instanceof Error ? checkingError.message : 'Не удалось проверить запись.');
-      }
-    } finally {
-      window.clearTimeout(timeout);
-      setChecking(false);
-    }
-  }, [audioBlob, checking, evaluation]);
-
-  return (
-    <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold text-slate-950">Ответьте вслух</h3>
-          <p className="mt-1 text-sm leading-6 text-slate-500">{hint || 'Нажмите микрофон, скажите ответ и остановите запись. Не нужно говорить медленно или по слогам.'}</p>
-        </div>
-        <div className={cn('rounded-lg px-3 py-2 text-sm font-bold tabular-nums', isRecording ? 'bg-red-50 text-red-700' : 'bg-slate-50 text-slate-700')}>{formatTime(elapsed)}</div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={isRecording ? stopRecording : startRecording}
-          aria-label={isRecording ? 'Остановить запись' : 'Начать запись'}
-          className={cn(
-            'flex h-16 w-16 items-center justify-center rounded-full transition active:scale-95',
-            isRecording ? 'animate-pulse bg-red-600 text-white' : 'border-2 border-slate-300 bg-white text-slate-900 hover:border-slate-500'
-          )}
-        >
-          {isRecording ? <Square className="h-6 w-6" /> : <Mic className="h-7 w-7" />}
-        </button>
-
-        <div className="min-w-[150px] flex-1">
-          <p className={cn('text-sm font-semibold', isRecording ? 'text-red-700' : audioBlob ? 'text-emerald-700' : 'text-slate-600')}>
-            {isRecording ? 'Запись идёт… говорите' : audioBlob ? 'Запись готова' : 'Нажмите на микрофон'}
-          </p>
-          <p className="mt-1 text-xs leading-5 text-slate-400">При первом запуске браузер попросит разрешить микрофон.</p>
-        </div>
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="audio/*"
-        capture="user"
-        onChange={handleAudioFile}
-        className="hidden"
-      />
-
-      {!isRecording && !audioBlob && (
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="mt-4 min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-        >
-          Записать другим способом / выбрать аудио
-        </button>
-      )}
-
-      {audioUrl && !isRecording && (
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <audio src={audioUrl} controls preload="metadata" className="h-11 min-w-0 max-w-full flex-1" />
-          <button type="button" onClick={resetRecording} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-            <RefreshCw className="h-4 w-4" />Перезаписать
-          </button>
-        </div>
-      )}
-
-      {audioBlob && !isRecording && (
-        <div className="mt-4 border-t border-slate-100 pt-4">
-          <button
-            type="button"
-            onClick={checkWithOtto}
-            disabled={checking || aiAvailable === false}
-            className="inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-amber-100 px-4 py-2 text-sm font-bold text-amber-900 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Sparkles className="h-4 w-4" />
-            {checking ? 'Otto слушает и анализирует…' : 'Проверить с Otto'}
-          </button>
-          <p className="mt-2 text-xs leading-5 text-slate-400">Проверяется выполнение задания и понятность ответа A1. Точная фонетическая оценка произношения не заявляется.</p>
-        </div>
-      )}
-
-      {aiAvailable === false && (
-        <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm leading-6 text-rose-800">
-          Запись микрофона доступна, но AI-проверка на сервере сейчас не подключена. Нужно проверить переменную OPENAI_API_KEY в Vercel.
-        </div>
-      )}
-
-      {result && (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <div className="flex items-center gap-2 font-bold text-emerald-800"><CheckCircle2 className="h-5 w-5" />{result.score} / 100</div>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{result.feedbackRu}</p>
-          {result.feedbackDe && <p className="mt-2 text-sm leading-6 text-slate-600">{result.feedbackDe}</p>}
-          {result.transcript && <div className="mt-3 rounded-lg bg-white/70 p-3 text-sm text-slate-600"><span className="font-semibold">Распознано:</span> {result.transcript}</div>}
-          {result.missing && result.missing.length > 0 && <p className="mt-2 text-sm text-slate-600">Не прозвучало: {result.missing.join(', ')}</p>}
-        </div>
-      )}
-
-      {error && (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
-          {error}
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="ml-1 font-bold underline underline-offset-2">Использовать запасной способ</button>
-        </div>
-      )}
-
-      {!audioBlob && !isRecording && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-slate-400"><Volume2 className="h-4 w-4" />Запись остаётся только в текущем окне до отправки на AI-проверку.</div>
-      )}
-    </div>
-  );
-}
-
-function microphoneErrorMessage(error: unknown) {
-  if (error instanceof DOMException) {
-    if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-      return 'Доступ к микрофону запрещён. Разрешите микрофон для этого сайта в браузере и нажмите запись ещё раз.';
-    }
-    if (error.name === 'NotFoundError') {
-      return 'Микрофон не найден. Проверьте, что он подключён и доступен браузеру.';
-    }
-    if (error.name === 'NotReadableError' || error.name === 'AbortError') {
-      return 'Микрофон сейчас занят другим приложением или браузер не может его открыть. Закройте другую запись/звонок и попробуйте снова.';
-    }
-  }
-  return error instanceof Error ? error.message : 'Не удалось включить микрофон. Попробуйте запасной способ записи.';
-}
-
-function guessAudioMime(name: string) {
-  const lower = name.toLowerCase();
-  if (lower.endsWith('.mp3')) return 'audio/mpeg';
-  if (lower.endsWith('.m4a') || lower.endsWith('.mp4')) return 'audio/mp4';
-  if (lower.endsWith('.wav')) return 'audio/wav';
-  if (lower.endsWith('.ogg') || lower.endsWith('.oga')) return 'audio/ogg';
-  if (lower.endsWith('.webm')) return 'audio/webm';
-  return 'audio/webm';
-}
-
-function formatTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  return `${minutes}:${rest.toString().padStart(2, '0')}`;
 }
 
 function nextRandomIndex(current: number, total: number) {
@@ -819,17 +394,4 @@ function nextRandomIndex(current: number, total: number) {
   let next = current;
   while (next === current) next = Math.floor(Math.random() * total);
   return next;
-}
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Не удалось подготовить аудио.'));
-    reader.onload = () => {
-      const value = String(reader.result || '');
-      const comma = value.indexOf(',');
-      resolve(comma >= 0 ? value.slice(comma + 1) : value);
-    };
-    reader.readAsDataURL(blob);
-  });
 }
