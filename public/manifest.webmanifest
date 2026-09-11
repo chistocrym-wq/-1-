@@ -11,9 +11,9 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/otto.png",
-      "sizes": "any",
-      "type": "image/png",
+      "src": "/otto-icon-192.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
       "purpose": "any maskable"
     }
   ]
