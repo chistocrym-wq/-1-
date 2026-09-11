@@ -44,9 +44,11 @@
   padding-left: max(env(safe-area-inset-left), var(--tg-content-safe-area-inset-left, 0px));
 }
 
-/* Любая шапка страницы с кнопкой «Назад» остаётся доступной при прокрутке. */
+/* Первая шапка внутренней страницы остаётся доступной при прокрутке.
+   Селектор с непосредственной кнопкой ловит и старые экраны, где aria-label ещё не был задан. */
 .telegram-app .animate-fade-in > div:has(button[aria-label="Назад"]):first-child,
-.telegram-app .animate-fade-in > div:has(button[aria-label="Вернуться"]):first-child {
+.telegram-app .animate-fade-in > div:has(button[aria-label="Вернуться"]):first-child,
+.telegram-app .animate-fade-in > div:first-child:has(> button) {
   position: sticky;
   top: max(env(safe-area-inset-top), var(--tg-content-safe-area-inset-top, 0px));
   z-index: 60;
