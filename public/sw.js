@@ -1,5 +1,11 @@
-const CACHE_NAME = 'otto-a1-v1';
-const APP_SHELL = ['/', '/manifest.webmanifest', '/otto.png'];
+const CACHE_NAME = 'otto-a1-v2';
+const APP_SHELL = [
+  '/',
+  '/manifest.webmanifest',
+  '/otto.png',
+  '/otto-wave-1.webp',
+  '/otto-wave-2.webp'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
