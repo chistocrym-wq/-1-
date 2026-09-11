@@ -8,14 +8,16 @@
     <link rel="preload" as="image" href="/otto-splash-hq.webp" type="image/webp" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0F7D74" />
+    <meta name="color-scheme" content="light" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Отто A1" />
     <meta name="description" content="Тренажёр для подготовки к Goethe-Zertifikat A1" />
     <title>Тренажёр Отто — Goethe A1</title>
     <style>
+      :root { background: #0F7D74; color-scheme: light; }
       html, body, #root { min-height: 100%; }
-      html, body { margin: 0; background: #0F7D74; }
+      html, body { margin: 0; background: #0F7D74 !important; }
 
       #otto-launch {
         position: fixed;
@@ -25,47 +27,125 @@
         background: #0F7D74;
         opacity: 1;
         visibility: visible;
-        filter: blur(0);
-        transition:
-          opacity .62s cubic-bezier(.22,.61,.36,1),
-          filter .62s cubic-bezier(.22,.61,.36,1),
-          visibility .62s linear;
+        isolation: isolate;
+        transition: opacity .62s cubic-bezier(.22,.61,.36,1), visibility .62s linear;
       }
 
       #otto-launch.is-leaving {
         opacity: 0;
-        filter: blur(5px);
         visibility: hidden;
         pointer-events: none;
       }
 
-      .otto-launch__image {
+      .otto-launch__avatar {
+        position: absolute;
+        z-index: 4;
+        left: 50%;
+        top: 50%;
+        width: clamp(104px, 29vw, 158px);
+        aspect-ratio: 1;
+        overflow: hidden;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        background: #0F7D74;
+        box-shadow: 0 14px 35px rgba(0, 42, 39, .20), 0 0 0 4px rgba(255,255,255,.16);
+        transition: opacity .48s ease, transform .48s ease, filter .48s ease;
+      }
+
+      .otto-launch__avatar img {
         display: block;
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 50%;
+      }
+
+      #otto-launch.avatar-hidden .otto-launch__avatar {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.88);
+        filter: blur(4px);
+      }
+
+      .otto-launch__hero {
+        position: absolute;
+        z-index: 2;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
         object-position: center center;
         background: #0F7D74;
+        opacity: 0;
+        transform: scale(.965);
+        filter: blur(10px);
         image-rendering: auto;
         -webkit-user-drag: none;
         user-select: none;
+        transition:
+          opacity 1.1s cubic-bezier(.22,.61,.36,1),
+          transform 1.2s cubic-bezier(.22,.61,.36,1),
+          filter 1s cubic-bezier(.22,.61,.36,1);
       }
 
-      @media (min-width: 800px) {
-        .otto-launch__image {
-          width: min(100%, 760px);
-          margin: 0 auto;
+      #otto-launch.show-otto .otto-launch__hero {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+      }
+
+      #otto-launch.dissolve .otto-launch__hero {
+        opacity: 0;
+        transform: scale(1.035);
+        filter: blur(5px) saturate(.88);
+        transition-duration: 1.25s;
+      }
+
+      .otto-launch__particles {
+        position: absolute;
+        z-index: 6;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .otto-piece {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        width: var(--s);
+        height: var(--s);
+        border-radius: var(--r);
+        background: rgba(219, 255, 250, var(--o));
+        box-shadow: 0 0 12px rgba(104, 226, 211, .18);
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(0deg) scale(.7);
+        animation: otto-piece-out 1.28s cubic-bezier(.18,.7,.25,1) var(--d) forwards;
+      }
+
+      @keyframes otto-piece-out {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) rotate(0deg) scale(.55);
+        }
+        12% { opacity: .78; }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(.08);
         }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        #otto-launch { transition-duration: .25s; }
-        #otto-launch.is-leaving { filter: none; }
+        .otto-launch__avatar,
+        .otto-launch__hero,
+        #otto-launch { transition-duration: .25s !important; }
+        .otto-piece { display: none; }
       }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
     <script>
-      window.__ottoLaunchStarted = performance.now();
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js').catch(function (error) {
@@ -77,15 +157,19 @@
   </head>
   <body>
     <div id="otto-launch" aria-hidden="true">
+      <div class="otto-launch__avatar">
+        <img src="/otto-icon-512.webp" alt="" decoding="sync" fetchpriority="high" />
+      </div>
       <img
-        class="otto-launch__image"
+        class="otto-launch__hero"
         src="/otto-splash-hq.webp"
         alt=""
         width="1000"
         height="1778"
-        decoding="sync"
+        decoding="async"
         fetchpriority="high"
       />
+      <div class="otto-launch__particles" aria-hidden="true"></div>
     </div>
 
     <div id="root"></div>
@@ -94,35 +178,81 @@
       (function () {
         var splash = document.getElementById('otto-launch');
         if (!splash) return;
+        var particles = splash.querySelector('.otto-launch__particles');
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        function finishLaunch() {
-          var elapsed = performance.now() - (window.__ottoLaunchStarted || 0);
-          var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          var minDuration = reduced ? 700 : 1850;
-          var wait = Math.max(0, minDuration - elapsed);
-
-          window.setTimeout(function () {
-            splash.classList.add('is-leaving');
-            window.setTimeout(function () {
-              if (splash.parentNode) splash.parentNode.removeChild(splash);
-            }, reduced ? 280 : 680);
-          }, wait);
+        function makeParticles() {
+          if (!particles || reduced) return;
+          var count = 112;
+          var frag = document.createDocumentFragment();
+          for (var i = 0; i < count; i++) {
+            var p = document.createElement('i');
+            p.className = 'otto-piece';
+            var x = 7 + Math.random() * 86;
+            var y = 5 + Math.random() * 90;
+            var s = 3 + Math.random() * 8;
+            var dx = (Math.random() - .5) * 150;
+            var dy = -30 - Math.random() * 150;
+            var rot = (Math.random() - .5) * 260;
+            var delay = Math.random() * .22;
+            var opacity = .22 + Math.random() * .54;
+            p.style.setProperty('--x', x + '%');
+            p.style.setProperty('--y', y + '%');
+            p.style.setProperty('--s', s + 'px');
+            p.style.setProperty('--dx', dx + 'px');
+            p.style.setProperty('--dy', dy + 'px');
+            p.style.setProperty('--rot', rot + 'deg');
+            p.style.setProperty('--d', delay + 's');
+            p.style.setProperty('--o', opacity.toFixed(2));
+            p.style.setProperty('--r', Math.random() > .55 ? '50%' : '2px');
+            frag.appendChild(p);
+          }
+          particles.appendChild(frag);
         }
 
-        if (document.readyState === 'complete') {
-          finishLaunch();
-        } else {
-          window.addEventListener('load', finishLaunch, { once: true });
+        if (reduced) {
+          window.setTimeout(function () { splash.classList.add('avatar-hidden'); }, 350);
+          window.setTimeout(function () { splash.classList.add('show-otto'); }, 650);
+          window.setTimeout(function () { splash.classList.add('is-leaving'); }, 1900);
+          window.setTimeout(function () { if (splash.parentNode) splash.remove(); }, 2200);
+          return;
         }
 
+        // 0–0.8 s: round Otto avatar on brand teal.
+        window.setTimeout(function () {
+          splash.classList.add('avatar-hidden');
+        }, 820);
+
+        // 0.8–3.0 s: clean teal screen only.
+        // At 3 s Otto appears smoothly full height.
+        window.setTimeout(function () {
+          splash.classList.add('show-otto');
+        }, 3000);
+
+        // Around 6.15 s the splash breaks into transparent fragments.
+        window.setTimeout(function () {
+          makeParticles();
+          splash.classList.add('dissolve');
+        }, 6150);
+
+        // Reveal the already-rendered main screen underneath.
+        window.setTimeout(function () {
+          splash.classList.add('is-leaving');
+        }, 7240);
+
+        window.setTimeout(function () {
+          if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 7900);
+
+        // Safety valve if a browser throttles timers badly.
         window.setTimeout(function () {
           if (document.body.contains(splash)) {
             splash.classList.add('is-leaving');
             window.setTimeout(function () {
               if (splash.parentNode) splash.parentNode.removeChild(splash);
-            }, 680);
+            }, 700);
           }
-        }, 5000);
+        }, 11000);
       })();
     </script>
   </body>
