@@ -1,11 +1,10 @@
-const CACHE_NAME = 'otto-a1-v11';
+const CACHE_NAME = 'otto-a1-v12';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
   '/otto-blank-192.png',
   '/otto-blank-512.png',
-  '/otto-full-transparent.png',
-  '/otto.png'
+  '/otto.png?v=12'
 ];
 
 self.addEventListener('install', (event) => {
@@ -26,7 +25,7 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then((response) => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put('/', copy));
