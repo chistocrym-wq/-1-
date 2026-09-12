@@ -32,10 +32,10 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
   }, []);
 
   const modules = [
-    { id: 'lesen' as ModuleId, title: t.lesenTitle, subtitle: 'Чтение', icon: BookOpen },
     { id: 'horen' as ModuleId, title: t.horenTitle, subtitle: 'Аудирование', icon: Headphones },
     { id: 'schreiben' as ModuleId, title: t.schreibenTitle, subtitle: 'Письмо', icon: PenTool },
     { id: 'sprechen' as ModuleId, title: t.sprechenTitle, subtitle: 'Говорение', icon: Mic },
+    { id: 'lesen' as ModuleId, title: t.lesenTitle, subtitle: 'Чтение', icon: BookOpen },
   ];
 
   const totalStats = useMemo(() => {
@@ -68,9 +68,9 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
         </div>
 
         <div className="otto-home-copy">
-          <div className="otto-logo-word">OTTO</div>
+          <div className="otto-logo-word">Тренажёр OTTO</div>
           <h1>Немецкий A1</h1>
-          <p>С надёжным помощником</p>
+          <p>Ваш помощник · подготовимся к экзамену вместе</p>
           <div className="otto-handwritten">Новый язык.<br />Новые возможности!</div>
         </div>
         <div className="otto-home-character" aria-hidden="true">
