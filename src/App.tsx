@@ -19,6 +19,7 @@ import { useProgress } from '@/hooks/useProgress';
 import type { ModuleId } from '@/types';
 import './ottoDesignV2.css';
 import './ottoViewport.css';
+import './ottoSceneAssets.css';
 import './ottoSplash.css';
 import '@/data/lesen/registerExtraSets';
 
