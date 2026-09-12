@@ -9,6 +9,7 @@ import { SettingsPage } from '@/components/SettingsPage';
 import { NewsPage } from '@/components/NewsPage';
 import { BottomNav, type BottomTab } from '@/components/BottomNav';
 import { OttoScene, type OttoSceneName } from '@/components/OttoScene';
+import { OttoSplash } from '@/components/OttoSplash';
 import { PageTranslationEye } from '@/components/common/PageTranslationEye';
 import { ReadingModule } from '@/components/modules/ReadingModule';
 import { ListeningModule } from '@/components/modules/ListeningModule';
@@ -18,6 +19,7 @@ import { useProgress } from '@/hooks/useProgress';
 import type { ModuleId } from '@/types';
 import './ottoDesignV2.css';
 import './ottoViewport.css';
+import './ottoSplash.css';
 import '@/data/lesen/registerExtraSets';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | 'modules' | 'account' | 'settings' | 'news' | null;
@@ -72,38 +74,41 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`telegram-app otto-skin otto-app-shell ${viewClass}`}>
-      <div className="otto-backdrop" aria-hidden="true">
-        <div className="otto-glow otto-glow-a" />
-        <div className="otto-glow otto-glow-b" />
-        <div className="otto-line-art" />
+    <>
+      <OttoSplash />
+      <div className={`telegram-app otto-skin otto-app-shell ${viewClass}`}>
+        <div className="otto-backdrop" aria-hidden="true">
+          <div className="otto-glow otto-glow-a" />
+          <div className="otto-glow otto-glow-b" />
+          <div className="otto-line-art" />
+        </div>
+
+        <main className="otto-app-content relative z-10 mx-auto max-w-4xl">
+          {globalEye && <PageTranslationEye scopeId="otto-current-task" />}
+          <div id={globalEye ? 'otto-current-task' : undefined} className={view === null ? 'otto-home-screen' : 'otto-inner-screen'}>
+            {view === null && <Dashboard onSelectModule={setView} onOpenInstructions={() => setView('instructions')} onOpenExamGuide={() => setView('exam-guide')} onOpenMockExam={() => setView('mock-exam')} onOpenNews={() => setView('news')} onOpenAccount={() => setView('account')} progress={progress} />}
+            {view === 'modules' && <ModulesHub progress={progress} onSelectModule={setView} />}
+            {view === 'account' && <AccountPage progress={progress} />}
+            {view === 'settings' && <SettingsPage />}
+            {view === 'news' && <NewsPage onBack={back} />}
+            {view === 'instructions' && <Instructions onBack={back} />}
+            {view === 'exam-guide' && <ExamGuide onBack={back} />}
+            {view === 'mock-exam' && <MockExam onBack={back} />}
+            {view === 'lesen' && <ReadingModule onBack={back} onComplete={complete('lesen')} />}
+            {view === 'horen' && <ListeningModule onBack={back} onComplete={complete('horen')} />}
+            {view === 'schreiben' && <WritingModule onBack={back} onComplete={complete('schreiben')} />}
+            {view === 'sprechen' && <SpeakingModule onBack={back} onComplete={complete('sprechen')} />}
+          </div>
+        </main>
+
+        {companionScene && (
+          <div className={`otto-companion otto-companion-${companionScene}`} aria-hidden="true">
+            <OttoScene scene={companionScene} className="otto-companion-scene" />
+          </div>
+        )}
+
+        <BottomNav active={activeTab} onNavigate={navigateBottom} />
       </div>
-
-      <main className="otto-app-content relative z-10 mx-auto max-w-4xl">
-        {globalEye && <PageTranslationEye scopeId="otto-current-task" />}
-        <div id={globalEye ? 'otto-current-task' : undefined} className={view === null ? 'otto-home-screen' : 'otto-inner-screen'}>
-          {view === null && <Dashboard onSelectModule={setView} onOpenInstructions={() => setView('instructions')} onOpenExamGuide={() => setView('exam-guide')} onOpenMockExam={() => setView('mock-exam')} onOpenNews={() => setView('news')} onOpenAccount={() => setView('account')} progress={progress} />}
-          {view === 'modules' && <ModulesHub progress={progress} onSelectModule={setView} />}
-          {view === 'account' && <AccountPage progress={progress} />}
-          {view === 'settings' && <SettingsPage />}
-          {view === 'news' && <NewsPage onBack={back} />}
-          {view === 'instructions' && <Instructions onBack={back} />}
-          {view === 'exam-guide' && <ExamGuide onBack={back} />}
-          {view === 'mock-exam' && <MockExam onBack={back} />}
-          {view === 'lesen' && <ReadingModule onBack={back} onComplete={complete('lesen')} />}
-          {view === 'horen' && <ListeningModule onBack={back} onComplete={complete('horen')} />}
-          {view === 'schreiben' && <WritingModule onBack={back} onComplete={complete('schreiben')} />}
-          {view === 'sprechen' && <SpeakingModule onBack={back} onComplete={complete('sprechen')} />}
-        </div>
-      </main>
-
-      {companionScene && (
-        <div className={`otto-companion otto-companion-${companionScene}`} aria-hidden="true">
-          <OttoScene scene={companionScene} className="otto-companion-scene" />
-        </div>
-      )}
-
-      <BottomNav active={activeTab} onNavigate={navigateBottom} />
-    </div>
+    </>
   );
 }
