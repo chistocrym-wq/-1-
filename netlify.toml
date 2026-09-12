@@ -17,7 +17,12 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
 
 [[headers]]
-  for = "/sw.js"
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/otto/*"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
