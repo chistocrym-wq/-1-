@@ -26,6 +26,12 @@ if (riff !== 'RIFF' || webp !== 'WEBP') {
   throw new Error(`Assembled Otto sprite is not a valid WebP (RIFF=${riff}, WEBP=${webp})`);
 }
 
+// The legacy sprite in the repository was ~15 KB. The current six-pose sprite
+// is much larger; fail the build instead of silently publishing the legacy asset.
+if (buffer.length < 50000) {
+  throw new Error(`Otto sprite is unexpectedly small (${buffer.length} bytes); refusing to publish legacy/corrupt artwork.`);
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outFile, buffer);
 console.log(`Built ${path.relative(root, outFile)} from ${parts.length} parts (${buffer.length} bytes)`);
