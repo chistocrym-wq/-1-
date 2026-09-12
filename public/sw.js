@@ -1,11 +1,11 @@
-const CACHE_NAME = 'otto-a1-v10';
+const CACHE_NAME = 'otto-a1-v11';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
   '/otto-blank-192.png',
   '/otto-blank-512.png',
-  '/otto-full-transparent.webp',
-  '/otto-splash-hq.webp'
+  '/otto-full-transparent.png',
+  '/otto.png'
 ];
 
 self.addEventListener('install', (event) => {
