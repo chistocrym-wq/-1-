@@ -8,6 +8,7 @@ import { AccountPage } from '@/components/AccountPage';
 import { SettingsPage } from '@/components/SettingsPage';
 import { NewsPage } from '@/components/NewsPage';
 import { BottomNav, type BottomTab } from '@/components/BottomNav';
+import { OttoScene, type OttoSceneName } from '@/components/OttoScene';
 import { PageTranslationEye } from '@/components/common/PageTranslationEye';
 import { ReadingModule } from '@/components/modules/ReadingModule';
 import { ListeningModule } from '@/components/modules/ListeningModule';
@@ -15,8 +16,8 @@ import { WritingModule } from '@/components/modules/WritingModule';
 import { SpeakingModule } from '@/components/modules/SpeakingModule';
 import { useProgress } from '@/hooks/useProgress';
 import type { ModuleId } from '@/types';
-import { OTTO_CHARACTER_SRC } from './ottoCharacter';
 import './ottoDesignV2.css';
+import './ottoViewport.css';
 import '@/data/lesen/registerExtraSets';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | 'modules' | 'account' | 'settings' | 'news' | null;
@@ -52,26 +53,35 @@ export default function App() {
     return 'settings';
   }, [view]);
 
+  const companionScene = useMemo<OttoSceneName | null>(() => {
+    if (view === 'lesen') return 'lesen';
+    if (view === 'horen') return 'horen';
+    if (view === 'schreiben') return 'schreiben';
+    if (view === 'sprechen' || view === 'instructions' || view === 'exam-guide') return 'guide';
+    if (view === 'mock-exam') return 'exam';
+    if (view === 'news') return 'home';
+    return null;
+  }, [view]);
+
   const navigateBottom = useCallback((tab: BottomTab) => {
     if (tab === 'home') setView(null);
     if (tab === 'modules') setView('modules');
     if (tab === 'guides') setView('exam-guide');
     if (tab === 'account') setView('account');
     if (tab === 'settings') setView('settings');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   return (
-    <div className={`telegram-app otto-skin ${viewClass} min-h-screen`}>
+    <div className={`telegram-app otto-skin otto-app-shell ${viewClass}`}>
       <div className="otto-backdrop" aria-hidden="true">
         <div className="otto-glow otto-glow-a" />
         <div className="otto-glow otto-glow-b" />
         <div className="otto-line-art" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl px-3 py-4 pb-28 sm:px-6 sm:py-8 sm:pb-32">
+      <main className="otto-app-content relative z-10 mx-auto max-w-4xl">
         {globalEye && <PageTranslationEye scopeId="otto-current-task" />}
-        <div id={globalEye ? 'otto-current-task' : undefined} className={view === null ? '' : 'otto-inner-screen'}>
+        <div id={globalEye ? 'otto-current-task' : undefined} className={view === null ? 'otto-home-screen' : 'otto-inner-screen'}>
           {view === null && <Dashboard onSelectModule={setView} onOpenInstructions={() => setView('instructions')} onOpenExamGuide={() => setView('exam-guide')} onOpenMockExam={() => setView('mock-exam')} onOpenNews={() => setView('news')} onOpenAccount={() => setView('account')} progress={progress} />}
           {view === 'modules' && <ModulesHub progress={progress} onSelectModule={setView} />}
           {view === 'account' && <AccountPage progress={progress} />}
@@ -85,11 +95,11 @@ export default function App() {
           {view === 'schreiben' && <WritingModule onBack={back} onComplete={complete('schreiben')} />}
           {view === 'sprechen' && <SpeakingModule onBack={back} onComplete={complete('sprechen')} />}
         </div>
-      </div>
+      </main>
 
-      {view !== null && view !== 'account' && view !== 'settings' && view !== 'modules' && (
-        <div className="otto-companion" aria-hidden="true">
-          <div className="otto-companion-crop"><img src={OTTO_CHARACTER_SRC} alt="" /></div>
+      {companionScene && (
+        <div className={`otto-companion otto-companion-${companionScene}`} aria-hidden="true">
+          <OttoScene scene={companionScene} className="otto-companion-scene" />
         </div>
       )}
 
