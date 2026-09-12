@@ -21,6 +21,7 @@ import './ottoDesignV2.css';
 import './ottoViewport.css';
 import './ottoSceneAssets.css';
 import './ottoSplash.css';
+import './ottoFinalPolish.css';
 import '@/data/lesen/registerExtraSets';
 
 type View = ModuleId | 'instructions' | 'exam-guide' | 'mock-exam' | 'modules' | 'account' | 'settings' | 'news' | null;
