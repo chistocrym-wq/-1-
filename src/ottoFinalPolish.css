@@ -26,3 +26,5 @@
   .otto-module-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .otto-home-module-card{min-height:92px;}
 }
+
+/* deploy trigger: final Otto polish */
