@@ -1,29 +1,38 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
-const PARTICLES = Array.from({ length: 56 }, (_, i) => ({
-  left: 18 + ((i * 37) % 64),
-  top: 18 + ((i * 53) % 62),
-  dx: ((i % 9) - 4) * 18,
-  dy: -58 - ((i * 13) % 108),
-  delay: (i % 10) * 24,
+const PARTICLES = Array.from({ length: 72 }, (_, i) => ({
+  left: 14 + ((i * 37) % 72),
+  top: 14 + ((i * 53) % 70),
+  dx: ((i % 11) - 5) * 18,
+  dy: -52 - ((i * 13) % 124),
+  delay: (i % 12) * 20,
 }));
 
 export function OttoSplash() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [active, setActive] = useState(true);
-  const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(false);
   const [dissolving, setDissolving] = useState(false);
+
+  useEffect(() => {
+    const reveal = window.setTimeout(() => setVisible(true), 3000);
+    const dissolve = window.setTimeout(() => setDissolving(true), 6800);
+    const finish = window.setTimeout(() => setActive(false), 8200);
+    return () => {
+      window.clearTimeout(reveal);
+      window.clearTimeout(dissolve);
+      window.clearTimeout(finish);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = '/otto.png?v=12';
+    let cancelled = false;
 
-    image.onload = () => {
+    const drawOtto = (image: HTMLImageElement, removeDarkBackground: boolean) => {
+      if (cancelled) return;
       const size = 900;
       canvas.width = size;
       canvas.height = size;
@@ -38,6 +47,8 @@ export function OttoSplash() {
 
       ctx.clearRect(0, 0, size, size);
       ctx.drawImage(image, x, y, width, height);
+
+      if (!removeDarkBackground) return;
 
       try {
         const frame = ctx.getImageData(0, 0, size, size);
@@ -55,7 +66,9 @@ export function OttoSplash() {
           const r = data[p];
           const g = data[p + 1];
           const b = data[p + 2];
-          return r < 82 && g < 82 && b < 82 && Math.max(r, g, b) - Math.min(r, g, b) < 22;
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          return max < 100 && max - min < 30;
         };
 
         const push = (pixel: number) => {
@@ -86,34 +99,31 @@ export function OttoSplash() {
 
         ctx.putImageData(frame, 0, 0);
       } catch {
-        // Keep Otto visible even if pixel processing is unavailable.
+        // If pixel processing is unavailable, Otto still remains visible.
       }
+    };
 
-      setReady(true);
+    const primary = new Image();
+    primary.decoding = 'async';
+    primary.src = '/otto.png?v=13';
+    primary.onload = () => drawOtto(primary, true);
+    primary.onerror = () => {
+      const fallback = new Image();
+      fallback.decoding = 'async';
+      fallback.src = '/otto-full-transparent.png?v=13';
+      fallback.onload = () => drawOtto(fallback, false);
+    };
+
+    return () => {
+      cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    const reveal = window.setTimeout(() => setVisible(true), 2800);
-    const dissolve = window.setTimeout(() => setDissolving(true), 6500);
-    const finish = window.setTimeout(() => setActive(false), 8000);
-    return () => {
-      window.clearTimeout(reveal);
-      window.clearTimeout(dissolve);
-      window.clearTimeout(finish);
-    };
-  }, [ready]);
 
   if (!active) return null;
 
   return (
     <div className={`otto-splash-screen ${dissolving ? 'is-dissolving' : ''}`} aria-hidden="true">
-      <div className="otto-splash-glow" />
-      <canvas
-        ref={canvasRef}
-        className={`otto-splash-figure ${visible ? 'is-visible' : ''}`}
-      />
+      <canvas ref={canvasRef} className={`otto-splash-figure ${visible ? 'is-visible' : ''}`} />
       <div className="otto-splash-particles">
         {PARTICLES.map((p, i) => (
           <i
@@ -124,7 +134,7 @@ export function OttoSplash() {
               '--dx': `${p.dx}px`,
               '--dy': `${p.dy}px`,
               '--delay': `${p.delay}ms`,
-            } as React.CSSProperties}
+            } as CSSProperties}
           />
         ))}
       </div>
