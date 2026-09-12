@@ -1,7 +1,7 @@
 import { BarChart3, BookOpenCheck, CheckCircle2, Target } from 'lucide-react';
 import type { Progress } from '@/types';
 import { ProgressBar } from '@/components/ProgressBar';
-import { OTTO_CHARACTER_SRC } from '../ottoCharacter';
+import { OttoScene } from '@/components/OttoScene';
 
 interface Props { progress: Progress }
 
@@ -14,10 +14,10 @@ export function AccountPage({ progress }: Props) {
   const completed = ids.reduce((sum, id) => sum + (progress[id]?.completed ?? 0), 0);
 
   return (
-    <div className="animate-fade-in pb-28">
+    <div className="otto-hub-screen animate-fade-in">
       <section className="otto-page-hero otto-account-hero">
         <div><p className="otto-kicker">Личный кабинет</p><h1>Ваш прогресс в подготовке A1</h1></div>
-        <div className="otto-page-hero-character" aria-hidden="true"><img src={OTTO_CHARACTER_SRC} alt="" /></div>
+        <div className="otto-page-hero-character" aria-hidden="true"><OttoScene scene="home" className="otto-page-hero-scene" /></div>
       </section>
 
       <section className="otto-account-card">
@@ -26,10 +26,10 @@ export function AccountPage({ progress }: Props) {
         <div className="otto-account-stat"><span><BookOpenCheck /></span><strong>{completed}</strong><small>завершено наборов</small></div>
       </section>
 
-      <section className="otto-card mt-4 rounded-[28px] border border-white/90 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,.08)]">
-        <div className="mb-3 flex items-center justify-between"><div><p className="otto-kicker">Общий результат</p><h2 className="text-xl font-black text-slate-950">Точность ответов</h2></div><Target className="h-8 w-8 text-[#0F7D74]" /></div>
+      <section className="otto-account-summary otto-card rounded-[24px] border border-white/90 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,.08)]">
+        <div className="mb-2 flex items-center justify-between"><div><p className="otto-kicker">Общий результат</p><h2 className="text-lg font-black text-slate-950">Точность ответов</h2></div><Target className="h-7 w-7 text-[#0F7D74]" /></div>
         <ProgressBar value={accuracy} max={100} />
-        <p className="mt-3 text-sm text-slate-500">Статистика формируется из выполненных заданий во всех четырёх модулях.</p>
+        <p className="mt-2 text-xs text-slate-500">Статистика формируется из выполненных заданий во всех четырёх модулях.</p>
       </section>
     </div>
   );

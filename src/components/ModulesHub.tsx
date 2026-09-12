@@ -1,7 +1,7 @@
 import { BookOpen, Headphones, Mic, PenTool } from 'lucide-react';
 import type { ModuleId, Progress } from '@/types';
 import { ProgressBar } from '@/components/ProgressBar';
-import { OTTO_CHARACTER_SRC } from '../ottoCharacter';
+import { OttoScene } from '@/components/OttoScene';
 
 interface Props {
   progress: Progress;
@@ -17,18 +17,18 @@ const modules = [
 
 export function ModulesHub({ progress, onSelectModule }: Props) {
   return (
-    <div className="animate-fade-in pb-28">
+    <div className="otto-hub-screen animate-fade-in">
       <section className="otto-page-hero">
         <div>
           <p className="otto-kicker">Учебные модули</p>
           <h1>Выберите раздел и продолжайте подготовку</h1>
         </div>
         <div className="otto-page-hero-character" aria-hidden="true">
-          <img src={OTTO_CHARACTER_SRC} alt="" />
+          <OttoScene scene="guide" className="otto-page-hero-scene" />
         </div>
       </section>
 
-      <section className="space-y-4">
+      <section className="otto-module-list">
         {modules.map(({ id, title, subtitle, desc, icon: Icon }) => {
           const item = progress[id];
           const answered = item?.answered ?? 0;
@@ -42,8 +42,8 @@ export function ModulesHub({ progress, onSelectModule }: Props) {
                 <small>{subtitle}</small>
                 <span className="otto-module-row-desc">{desc}</span>
               </span>
-              <span className="w-28 shrink-0 sm:w-36">
-                <span className="mb-2 flex items-center justify-between text-xs font-bold text-slate-500"><span>{answered}</span><span>{accuracy}%</span></span>
+              <span className="otto-module-progress w-28 shrink-0 sm:w-36">
+                <span className="mb-1 flex items-center justify-between text-xs font-bold text-slate-500"><span>{answered}</span><span>{accuracy}%</span></span>
                 <ProgressBar value={accuracy} max={100} />
               </span>
             </button>

@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, ChevronDown, ChevronRight, FileText, Globe, Headphones, Lightbulb, Mic, Newspaper, PenTool } from 'lucide-react';
 import type { ModuleId, Progress } from '@/types';
 import { ProgressBar } from '@/components/ProgressBar';
+import { OttoScene } from '@/components/OttoScene';
 import { cn } from '@/lib/utils';
 import { languages, translations, type Language } from '../i18n';
-import { OTTO_CHARACTER_SRC } from '../ottoCharacter';
 
 interface DashboardProps {
   onSelectModule: (module: ModuleId) => void;
@@ -15,8 +15,6 @@ interface DashboardProps {
   onOpenAccount: () => void;
   progress: Progress;
 }
-
-const BRAND = '#0F7D74';
 
 export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide, onOpenMockExam, onOpenNews, onOpenAccount, progress }: DashboardProps) {
   const [lang, setLang] = useState<Language>('ru');
@@ -43,18 +41,16 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
   const totalStats = useMemo(() => {
     let answered = 0;
     let correct = 0;
-    let completed = 0;
     modules.forEach((m) => {
       const p = progress[m.id];
       answered += p?.answered ?? 0;
       correct += p?.correct ?? 0;
-      completed += p?.completed ?? 0;
     });
-    return { answered, completed, accuracy: answered ? Math.round((correct / answered) * 100) : 0 };
+    return { answered, accuracy: answered ? Math.round((correct / answered) * 100) : 0 };
   }, [progress]);
 
   return (
-    <div className="animate-fade-in pb-28">
+    <div className="otto-dashboard-screen animate-fade-in">
       <section className="otto-home-hero">
         <div className="absolute right-3 top-3 z-30" ref={dropdownRef}>
           <button type="button" onClick={() => setIsOpen((v) => !v)} className="otto-language-button">
@@ -78,7 +74,7 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
           <div className="otto-handwritten">Новый язык.<br />Новые возможности!</div>
         </div>
         <div className="otto-home-character" aria-hidden="true">
-          <img src={OTTO_CHARACTER_SRC} alt="" />
+          <OttoScene scene="home" className="otto-home-character-scene" />
         </div>
         <div className="otto-hero-skyline" aria-hidden="true" />
       </section>
@@ -88,10 +84,9 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
           <span>{totalStats.accuracy}%</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-2xl font-black text-slate-950">Ваш прогресс</p>
-          <p className="text-base font-semibold text-slate-500">Немецкий A1</p>
-          <div className="mt-3"><ProgressBar value={totalStats.accuracy} max={100} /></div>
-          <p className="mt-2 text-sm text-slate-500">{totalStats.answered} выполнено заданий</p>
+          <p className="otto-progress-title">Ваш прогресс</p>
+          <p className="otto-progress-subtitle">Немецкий A1 · {totalStats.answered} заданий</p>
+          <div className="otto-progress-line"><ProgressBar value={totalStats.accuracy} max={100} /></div>
         </div>
         <button type="button" onClick={onOpenAccount} className="otto-progress-link" aria-label="Открыть мой прогресс">
           <span className="otto-progress-bars"><i /><i /><i /></span>
@@ -100,20 +95,20 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
         </button>
       </section>
 
-      <section id="otto-modules" className="mt-7 scroll-mt-24">
+      <section id="otto-modules" className="otto-dashboard-section">
         <h2 className="otto-section-title">Учиться с OTTO</h2>
         <div className="otto-module-grid">
           {modules.map(({ id, title, subtitle, icon: Icon }) => (
             <button key={id} type="button" onClick={() => onSelectModule(id)} className="otto-home-module-card">
               <span className="otto-home-module-icon"><Icon /></span>
               <span className="min-w-0 flex-1 text-left"><strong>{title}</strong><small>{subtitle}</small></span>
-              <ChevronRight className="h-6 w-6 shrink-0 text-[#0F7D74]" />
+              <ChevronRight className="otto-card-chevron h-5 w-5 shrink-0" />
             </button>
           ))}
         </div>
       </section>
 
-      <section id="otto-materials" className="mt-7 scroll-mt-24">
+      <section id="otto-materials" className="otto-dashboard-section">
         <h2 className="otto-section-title">Полезные материалы</h2>
         <div className="otto-materials-grid">
           <button type="button" onClick={onOpenInstructions} className="otto-material-card">
@@ -129,7 +124,7 @@ export function Dashboard({ onSelectModule, onOpenInstructions, onOpenExamGuide,
       </section>
 
       <section className="otto-exam-cta">
-        <div className="otto-exam-otto" aria-hidden="true"><img src={OTTO_CHARACTER_SRC} alt="" /></div>
+        <div className="otto-exam-otto" aria-hidden="true"><OttoScene scene="exam" className="otto-exam-otto-scene" /></div>
         <div className="min-w-0 flex-1">
           <h2>Готовы пройти пробный экзамен?</h2>
           <p>Пробуйте сдать экзамен по времени как на экзамене и становитесь увереннее в своих силах.</p>
