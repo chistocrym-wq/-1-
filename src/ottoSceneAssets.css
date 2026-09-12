@@ -1,4 +1,4 @@
 /* Force every Otto scene to use the current six-pose transparent sprite. */
 .otto-scene {
-  background-image: url('/otto/otto-scenes.webp?v=15');
+  background-image: url('/otto/otto-scenes.webp?v=16');
 }
