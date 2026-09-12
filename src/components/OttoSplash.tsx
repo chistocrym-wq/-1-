@@ -86,7 +86,7 @@ export function OttoSplash() {
 
         ctx.putImageData(frame, 0, 0);
       } catch {
-        // If pixel processing is blocked, Otto still remains visible.
+        // Keep Otto visible even if pixel processing is unavailable.
       }
 
       setReady(true);
@@ -95,9 +95,9 @@ export function OttoSplash() {
 
   useEffect(() => {
     if (!ready) return;
-    const reveal = window.setTimeout(() => setVisible(true), 250);
-    const dissolve = window.setTimeout(() => setDissolving(true), 4350);
-    const finish = window.setTimeout(() => setActive(false), 5750);
+    const reveal = window.setTimeout(() => setVisible(true), 2800);
+    const dissolve = window.setTimeout(() => setDissolving(true), 6500);
+    const finish = window.setTimeout(() => setActive(false), 8000);
     return () => {
       window.clearTimeout(reveal);
       window.clearTimeout(dissolve);
