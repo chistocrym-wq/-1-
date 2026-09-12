@@ -2,10 +2,10 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/otto-blank-192.png?v=9" />
-    <link rel="manifest" href="/manifest.webmanifest?v=9" />
-    <link rel="apple-touch-icon" href="/otto-blank-512.png?v=9" />
-    <link rel="preload" as="image" href="/otto-full-transparent.png?v=9" type="image/png" fetchpriority="high" />
+    <link rel="icon" type="image/png" href="/otto-blank-192.png?v=10" />
+    <link rel="manifest" href="/manifest.webmanifest?v=10" />
+    <link rel="apple-touch-icon" href="/otto-blank-512.png?v=10" />
+    <link rel="preload" as="image" href="/otto-full-transparent.webp?v=10" type="image/webp" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0F7D74" />
     <meta name="color-scheme" content="light" />
@@ -28,8 +28,7 @@
         background: #0F7D74;
         opacity: 1;
         visibility: visible;
-        isolation: isolate;
-        transition: opacity .65s cubic-bezier(.22,.61,.36,1), visibility .65s linear;
+        transition: opacity .72s cubic-bezier(.22,.61,.36,1), visibility .72s linear;
       }
 
       #otto-launch.is-leaving {
@@ -38,69 +37,55 @@
         pointer-events: none;
       }
 
-      .otto-launch__hero {
+      #otto-launch-hero {
         position: absolute;
-        z-index: 2;
         left: 50%;
-        bottom: max(0px, env(safe-area-inset-bottom));
+        bottom: max(1.5vh, env(safe-area-inset-bottom));
+        z-index: 2;
         display: block;
         width: auto;
-        height: auto;
-        max-width: 92vw;
-        max-height: 92vh;
+        height: min(88vh, 820px);
+        max-width: 94vw;
+        object-fit: contain;
         opacity: 0;
-        transform: translateX(-50%) translateY(28px) scale(.94);
+        transform: translateX(-50%) translateY(34px) scale(.95);
         filter: blur(10px);
-        image-rendering: auto;
+        transition: opacity 1.15s ease, transform 1.2s ease, filter 1.05s ease;
         -webkit-user-drag: none;
         user-select: none;
-        will-change: opacity, transform, filter;
-        transition:
-          opacity 1.15s cubic-bezier(.22,.61,.36,1),
-          transform 1.25s cubic-bezier(.22,.61,.36,1),
-          filter 1.05s cubic-bezier(.22,.61,.36,1);
+        pointer-events: none;
       }
 
-      #otto-launch.show-otto .otto-launch__hero {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0) scale(1);
-        filter: blur(0);
-      }
-
-      #otto-launch.dissolve .otto-launch__hero {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-8px) scale(1.025);
-        filter: blur(4px);
-        transition-duration: .55s;
+      #otto-launch.dissolve #otto-launch-hero {
+        opacity: 0 !important;
+        transform: translateX(-50%) translateY(-10px) scale(1.025) !important;
+        filter: blur(5px) !important;
+        transition-duration: .65s;
       }
 
       .otto-launch__particles {
         position: absolute;
-        z-index: 5;
         inset: 0;
+        z-index: 5;
         overflow: hidden;
         pointer-events: none;
       }
 
-      .otto-shard {
+      .otto-piece {
         position: absolute;
-        z-index: 6;
-        background-image: url('/otto-full-transparent.png?v=9');
-        background-repeat: no-repeat;
-        opacity: 1;
-        will-change: transform, opacity, filter;
-        animation: otto-shard-away 1.45s cubic-bezier(.18,.7,.22,1) var(--delay) forwards;
+        width: var(--size);
+        height: var(--size);
+        left: var(--x);
+        top: var(--y);
+        border-radius: 2px;
+        background: rgba(219,255,250,var(--alpha));
+        opacity: 0;
+        animation: otto-piece-away 1.35s cubic-bezier(.18,.7,.22,1) var(--delay) forwards;
       }
 
-      @keyframes otto-shard-away {
-        0% { opacity: .96; filter: blur(0); transform: translate(0, 0) rotate(0deg) scale(1); }
-        38% { opacity: .72; }
-        100% { opacity: 0; filter: blur(2px); transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(.18); }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .otto-launch__hero, #otto-launch { transition-duration: .25s !important; }
-        .otto-shard { display: none; }
+      @keyframes otto-piece-away {
+        0% { opacity: .8; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.12) rotate(var(--rot)); }
       }
     </style>
 
@@ -108,11 +93,9 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js?v=9').then(function (registration) {
+          navigator.serviceWorker.register('/sw.js?v=10').then(function (registration) {
             registration.update().catch(function () {});
-          }).catch(function (error) {
-            console.error('Service worker registration failed:', error);
-          });
+          }).catch(function () {});
         });
       }
     </script>
@@ -120,7 +103,13 @@
 
   <body>
     <div id="otto-launch" aria-hidden="true">
-      <img id="otto-launch-hero" class="otto-launch__hero" src="/otto-full-transparent.png?v=9" alt="" decoding="sync" fetchpriority="high" />
+      <img
+        id="otto-launch-hero"
+        src="/otto-full-transparent.webp?v=10"
+        alt=""
+        decoding="async"
+        fetchpriority="high"
+      />
       <div class="otto-launch__particles" aria-hidden="true"></div>
     </div>
 
@@ -131,73 +120,63 @@
       (function () {
         var splash = document.getElementById('otto-launch');
         var hero = document.getElementById('otto-launch-hero');
-        var particles = splash && splash.querySelector('.otto-launch__particles');
+        var particles = splash.querySelector('.otto-launch__particles');
         if (!splash || !hero) return;
 
-        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        var timers = [];
-        function later(fn, ms) { timers.push(window.setTimeout(fn, ms)); }
+        function showOtto() {
+          hero.style.opacity = '1';
+          hero.style.filter = 'blur(0)';
+          hero.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+        }
 
-        function makeImageShards() {
-          if (!particles || reduced) return;
+        function makeParticles() {
+          if (!particles) return;
           particles.textContent = '';
-          var rect = hero.getBoundingClientRect();
-          if (!rect.width || !rect.height) return;
-          var splashRect = splash.getBoundingClientRect();
-          var cols = 12, rows = 20;
-          var cellW = rect.width / cols, cellH = rect.height / rows;
           var frag = document.createDocumentFragment();
-
-          for (var row = 0; row < rows; row++) {
-            for (var col = 0; col < cols; col++) {
-              if (Math.random() < .12) continue;
-              var shard = document.createElement('i');
-              shard.className = 'otto-shard';
-              var left = rect.left - splashRect.left + col * cellW;
-              var top = rect.top - splashRect.top + row * cellH;
-              shard.style.left = left + 'px';
-              shard.style.top = top + 'px';
-              shard.style.width = (cellW + .7) + 'px';
-              shard.style.height = (cellH + .7) + 'px';
-              shard.style.backgroundSize = rect.width + 'px ' + rect.height + 'px';
-              shard.style.backgroundPosition = (-col * cellW) + 'px ' + (-row * cellH) + 'px';
-              shard.style.setProperty('--dx', ((Math.random() - .5) * 210) + 'px');
-              shard.style.setProperty('--dy', (-40 - Math.random() * 210 + row * 1.5) + 'px');
-              shard.style.setProperty('--rot', ((Math.random() - .5) * 300) + 'deg');
-              shard.style.setProperty('--delay', (Math.random() * .28) + 's');
-              frag.appendChild(shard);
-            }
+          for (var i = 0; i < 150; i++) {
+            var p = document.createElement('i');
+            p.className = 'otto-piece';
+            p.style.setProperty('--x', (8 + Math.random() * 84) + '%');
+            p.style.setProperty('--y', (8 + Math.random() * 84) + '%');
+            p.style.setProperty('--size', (3 + Math.random() * 7) + 'px');
+            p.style.setProperty('--alpha', (.22 + Math.random() * .55).toFixed(2));
+            p.style.setProperty('--dx', ((Math.random() - .5) * 210) + 'px');
+            p.style.setProperty('--dy', (-35 - Math.random() * 190) + 'px');
+            p.style.setProperty('--rot', ((Math.random() - .5) * 300) + 'deg');
+            p.style.setProperty('--delay', (Math.random() * .22) + 's');
+            frag.appendChild(p);
           }
           particles.appendChild(frag);
         }
 
-        function removeSplash() {
-          timers.forEach(function (id) { window.clearTimeout(id); });
-          if (splash.parentNode) splash.parentNode.removeChild(splash);
-        }
-
-        function startSequence() {
-          if (reduced) {
-            later(function () { splash.classList.add('show-otto'); }, 700);
-            later(function () { splash.classList.add('is-leaving'); }, 2300);
-            later(removeSplash, 2650);
-            return;
-          }
-
-          later(function () { splash.classList.add('show-otto'); }, 3000);
-          later(function () { makeImageShards(); splash.classList.add('dissolve'); }, 6150);
-          later(function () { splash.classList.add('is-leaving'); }, 7350);
-          later(removeSplash, 8050);
-          later(function () { if (document.body.contains(splash)) removeSplash(); }, 11000);
-        }
-
-        // Start timers immediately; the PNG is preloaded and decoded synchronously.
-        // Also force visibility when it has loaded, so Telegram/Android cannot miss the class change.
+        // If the primary image fails for any reason, use the older known-visible Otto asset.
         hero.addEventListener('error', function () {
-          console.error('Otto splash PNG failed to load:', hero.currentSrc || hero.src);
-        }, { once: true });
+          if (!hero.dataset.fallback) {
+            hero.dataset.fallback = '1';
+            hero.src = '/otto-splash-hq.webp?v=10';
+          }
+        });
 
-        startSequence();
+        // 0–3 s: only the teal screen.
+        window.setTimeout(showOtto, 3000);
+
+        // Keep Otto visible, then dissolve the splash.
+        window.setTimeout(function () {
+          makeParticles();
+          splash.classList.add('dissolve');
+        }, 6200);
+
+        window.setTimeout(function () {
+          splash.classList.add('is-leaving');
+        }, 7350);
+
+        window.setTimeout(function () {
+          if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 8150);
+
+        window.setTimeout(function () {
+          if (document.body.contains(splash)) splash.remove();
+        }, 11000);
       })();
     </script>
   </body>
