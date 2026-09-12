@@ -52,7 +52,7 @@ export function ListeningModule({onBack,onComplete}:Props){
       <div className="space-y-5 p-5">
         <p className="rounded-xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-700"><HoverTranslateText text={task.instruction}/></p>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-          <audio ref={audioRef} src={audioSrc} controls preload="metadata" className="w-full" onError={()=>{if(task.number===73&&audioRef.current)audioRef.current.src='/audio/073%20.mp3'}}/>
+          <audio ref={audioRef} src={audioSrc} controls preload="metadata" className="w-full"/>
         </div>
         <img src={imageSrc} alt="Aufgabe" className="mx-auto max-h-64 max-w-full rounded-xl object-contain" onError={e=>{e.currentTarget.style.display='none'}}/>
         <p className="text-lg font-bold leading-7 text-slate-950"><HoverTranslateText text={task.prompt}/></p>
