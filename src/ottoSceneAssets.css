@@ -1,4 +1,9 @@
-/* Force every Otto scene to use the current six-pose transparent sprite. */
-.otto-scene {
-  background-image: url('/otto/otto-scenes.webp?v=17');
+/* Otto scenes now use six standalone transparent image files. */
+.otto-scene-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  background: transparent;
 }
